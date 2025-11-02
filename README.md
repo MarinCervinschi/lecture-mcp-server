@@ -76,20 +76,20 @@ MAX_FILE_SIZE=10485760
 
 ```bash
 # With uv (recommended)
-uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+uv run python run.py
 
-# Or after activating venv
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+# Or python directly (if virtual environment is activated)
+python run.py
 ```
 
-### API Documentation (Coming Soon)
+### API Documentation
 
 Visit the interactive API documentation:
-- **Swagger UI**: http://localhost:8000/docs
-- **ReDoc**: http://localhost:8000/redoc
+- **Swagger UI**: http://localhost:8000/api/docs
+- **ReDoc**: http://localhost:8000/api/redoc
 - **Health Check**: http://localhost:8000/api/health
 
-## 📚 API Endpoints (Coming Soon)
+## 📚 API Endpoints
 
 ### Health Check
 ```bash
