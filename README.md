@@ -16,67 +16,141 @@ A FastAPI-based MCP (Model Context Protocol) server for intelligent processing o
 - **MCP**: Model Context Protocol
 - **LLM**: Google Gemini API
 - **PDF Processing**: PyPDF2 / pdfplumber
-- **Async Support**: Python 3.8+
-- **Container**: Docker
+- **Package Manager**: uv (fast Python package installer)
+- **Python**: 3.12+
 
 ## 📋 Prerequisites
 
-- Python 3.8+
+- Python 3.12+
+- [uv](https://github.com/astral-sh/uv) - Fast Python package installer
 - Google Gemini API key
-- Poetry or pip for dependency management
 
 ## 🔧 Installation
 
+### 1. Install uv
+
 ```bash
-git clone https://github.com/yourusername/lecture-mcp-server
-cd lecture-mcp-server
-poetry install
+# macOS/Linux
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Or with pip
+pip install uv
 ```
 
-## ⚙️ Configuration
+### 2. Clone and Setup
 
-Set your environment variables:
 ```bash
-export GEMINI_API_KEY=your_key_here
-export MCP_SERVER_PORT=8000
+# Clone repository
+git clone https://github.com/yourusername/lecture-mcp-server
+cd lecture-mcp-server
+
+# Create virtual environment and install dependencies
+uv sync
+
+# Activate virtual environment
+source .venv/bin/activate  # macOS/Linux
+# or
+.venv\Scripts\activate     # Windows
+```
+
+### 3. Configuration
+
+Create a `.env` file:
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` with your settings:
+
+```env
+GEMINI_API_KEY=your_api_key_here
+LOG_LEVEL=INFO
+MAX_CHUNK_SIZE=2000
+MAX_FILE_SIZE=10485760
 ```
 
 ## 🚀 Usage
 
 ### Starting the Server
+
 ```bash
-uvicorn main:app --reload --port 8000
+# With uv (recommended)
+uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+
+# Or after activating venv
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-### API Documentation
-Visit `http://localhost:8000/docs` for interactive API docs.
+### API Documentation (Coming Soon)
 
-## 📚 API Endpoints
+Visit the interactive API documentation:
+- **Swagger UI**: http://localhost:8000/docs
+- **ReDoc**: http://localhost:8000/redoc
+- **Health Check**: http://localhost:8000/api/health
 
-- `POST /mcp/tools/pdf-to-markdown` - Convert PDF to structured Markdown
-- `POST /mcp/tools/filter-content` - AI-powered content filtering
-- `GET /mcp/tools` - List available MCP tools
+## 📚 API Endpoints (Coming Soon)
 
-## 🏗 Project Structure
-
+### Health Check
+```bash
+GET /api/health
 ```
-lecture-mcp-server/
-├── app/
-│   ├── core/          # Configuration and base classes
-│   ├── mcp/           # MCP protocol implementation
-│   ├── services/      # Business logic (PDF, LLM services)
-│   ├── models/        # Pydantic models
-│   └── api/           # FastAPI routes
-├── tests/
-├── docs/
-└── scripts/
-```
+
+### MCP Tools (Coming Soon)
+- `POST /api/mcp/tools/pdf-to-markdown` - Convert PDF to structured Markdown
+- `POST /api/mcp/tools/filter-content` - AI-powered content filtering
+- `GET /api/mcp/tools` - List available MCP tools
 
 ## 🧪 Testing
 
 ```bash
-pytest tests/
+# Run tests
+uv run pytest
+
+# Run with coverage
+uv run pytest --cov=app --cov-report=html
+
+# Run specific test file
+uv run pytest tests/test_health.py
 ```
+
+## 🔨 Development
+
+### Adding Dependencies
+
+```bash
+# Add production dependency
+uv add package-name
+
+# Add development dependency
+uv add --dev package-name
+
+# Update all dependencies
+uv sync --upgrade
+```
+
+### Code Quality
+
+```bash
+# Format code
+uv run black app/
+uv run isort app/
+
+# Lint
+uv run ruff check app/
+
+# Type checking
+uv run mypy app/
+```
+
+## 🐳 Docker (Coming Soon)
+
+
+## 📖 Documentation
+
+- [Project Requirements](requirements.md)
+- [Task Breakdown](tasks.md)
+- [API Documentation](http://localhost:8000/docs) (when server is running)
 
 ## 🤝 Contributing
 
