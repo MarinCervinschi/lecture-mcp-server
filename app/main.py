@@ -7,7 +7,7 @@ import logging
 
 from app.core.config import settings
 from app.core.logging import setup_logging
-from app.api import health
+from app.api import health, mcp
 from app.models.responses import ErrorResponse
 
 setup_logging()
@@ -21,13 +21,10 @@ async def lifespan(app: FastAPI):
     logger.info(f"Starting {settings.PROJECT_NAME} v{settings.VERSION}")
     logger.info(f"API documentation available at {settings.API_STR}/docs")
 
-    # TODO: Initialize resources (DB connections, etc.)
-
     yield
 
     # Shutdown
     logger.info(f"Shutting down {settings.PROJECT_NAME}")
-    # TODO: Cleanup resources
 
 
 app = FastAPI(
@@ -78,6 +75,7 @@ async def general_exception_handler(request: Request, exc: Exception) -> JSONRes
 
 # Include routers
 app.include_router(health.router, prefix=settings.API_STR, tags=["Health"])
+app.include_router(mcp.router, prefix=f"{settings.API_STR}/mcp", tags=["MCP"])
 
 
 @app.get("/", summary="Root Endpoint", description="Get basic API information")
@@ -94,4 +92,5 @@ async def root() -> dict:
         "description": settings.DESCRIPTION,
         "docs": f"{settings.API_STR}/docs",
         "health": f"{settings.API_STR}/health",
+        "mcp": f"{settings.API_STR}/mcp/tools",
     }
