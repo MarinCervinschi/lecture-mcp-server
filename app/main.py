@@ -1,6 +1,97 @@
-def main():
-    print("Hello from lecture-mcp-server!")
+from fastapi import FastAPI, Request, status
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
+from contextlib import asynccontextmanager
+import logging
+
+from app.core.config import settings
+from app.core.logging import setup_logging
+from app.api import health
+from app.models.responses import ErrorResponse
+
+setup_logging()
+logger = logging.getLogger(__name__)
 
 
-if __name__ == "__main__":
-    main()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifespan events."""
+    # Startup
+    logger.info(f"Starting {settings.PROJECT_NAME} v{settings.VERSION}")
+    logger.info(f"API documentation available at {settings.API_STR}/docs")
+
+    # TODO: Initialize resources (DB connections, etc.)
+
+    yield
+
+    # Shutdown
+    logger.info(f"Shutting down {settings.PROJECT_NAME}")
+    # TODO: Cleanup resources
+
+
+app = FastAPI(
+    title=settings.PROJECT_NAME,
+    description=settings.DESCRIPTION,
+    version=settings.VERSION,
+    openapi_url=f"{settings.API_STR}/openapi.json",
+    docs_url=f"{settings.API_STR}/docs",
+    redoc_url=f"{settings.API_STR}/redoc",
+    lifespan=lifespan,
+)
+
+# CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(
+    request: Request, exc: RequestValidationError
+) -> JSONResponse:
+    """Handle validation errors."""
+    logger.error(f"Validation error: {exc.errors()}")
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content=ErrorResponse(
+            error="Validation Error", detail=str(exc.errors()), code="VALIDATION_ERROR"
+        ).model_dump(),
+    )
+
+
+@app.exception_handler(Exception)
+async def general_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    """Handle general exceptions."""
+    logger.error(f"Unhandled exception: {str(exc)}", exc_info=True)
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content=ErrorResponse(
+            error="Internal Server Error", detail=str(exc), code="INTERNAL_ERROR"
+        ).model_dump(),
+    )
+
+
+# Include routers
+app.include_router(health.router, prefix=settings.API_STR, tags=["Health"])
+
+
+@app.get("/", summary="Root Endpoint", description="Get basic API information")
+async def root() -> dict:
+    """
+    Root endpoint providing basic API information.
+
+    Returns:
+        dict: API information and documentation links
+    """
+    return {
+        "name": settings.PROJECT_NAME,
+        "version": settings.VERSION,
+        "description": settings.DESCRIPTION,
+        "docs": f"{settings.API_STR}/docs",
+        "health": f"{settings.API_STR}/health",
+    }
