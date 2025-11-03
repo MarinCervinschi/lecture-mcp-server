@@ -23,17 +23,12 @@ router = APIRouter()
     description="List all available MCP tools with their schemas",
 )
 async def discover_tools() -> ToolDiscoveryResponse:
-    """
-    Discover all available MCP tools.
-
-    Returns:
-        ToolDiscoveryResponse: List of available tools with schemas
-    """
+    """Discover all available MCP tools."""
     logger.info("Tool discovery requested")
-    tools = mcp_registry.list_tools()
+    schemas = mcp_registry.list_tool_schemas()
 
     return ToolDiscoveryResponse(
-        tools=tools, server_version=settings.VERSION, protocol_version="1.0"
+        tools=schemas, server_version=settings.VERSION, protocol_version="1.0"
     )
 
 
@@ -57,7 +52,7 @@ async def get_tool_schema(tool_name: str):
         HTTPException: If tool not found
     """
     logger.debug(f"Schema requested for tool: {tool_name}")
-    tool = mcp_registry.get_tool(tool_name)
+    tool = mcp_registry.get_tool_schema(tool_name)
 
     if not tool:
         raise HTTPException(
@@ -90,22 +85,8 @@ async def execute_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
     logger.info(f"Executing tool: {request.tool}")
     start_time = time.time()
 
-    # Validate tool exists
-    if not mcp_registry.tool_exists(request.tool):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Tool '{request.tool}' not found",
-        )
-
-    # TODO: Implement actual tool execution
-    # For now, return a mock response
     try:
-        # Placeholder for actual execution logic
-        result = {
-            "message": f"Tool {request.tool} executed successfully",
-            "parameters": request.parameters,
-            "note": "This is a placeholder response. Actual implementation pending.",
-        }
+        result = await mcp_registry.execute_tool(request.tool, request.parameters)
 
         execution_time = time.time() - start_time
 
@@ -115,6 +96,9 @@ async def execute_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
             result=result,
             execution_time=execution_time,
         )
+
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
     except Exception as e:
         logger.error(f"Tool execution failed: {str(e)}", exc_info=True)

@@ -1,10 +1,17 @@
 import base64
-import magic
 from typing import Optional
 from app.core.config import settings
 import logging
 
 logger = logging.getLogger(__name__)
+
+try:
+    import magic
+
+    MAGIC_AVAILABLE = True
+except ImportError:
+    MAGIC_AVAILABLE = False
+    logger.warning("python-magic not available. MIME type detection will be limited.")
 
 
 class FileValidationError(Exception):
@@ -94,6 +101,12 @@ def detect_mime_type(file_data: bytes) -> str:
     Returns:
         str: Detected MIME type
     """
+    if not MAGIC_AVAILABLE:
+        logger.debug("python-magic not available, using basic detection")
+        if file_data.startswith(b"%PDF-"):
+            return "application/pdf"
+        return "application/octet-stream"
+
     try:
         mime = magic.Magic(mime=True)
         mime_type = mime.from_buffer(file_data)
@@ -115,6 +128,10 @@ def validate_mime_type(file_data: bytes, expected_mime: str) -> None:
     Raises:
         FileValidationError: If MIME type doesn't match
     """
+    if not MAGIC_AVAILABLE:
+        logger.warning("python-magic not available, skipping MIME type validation")
+        return
+
     detected_mime = detect_mime_type(file_data)
 
     if detected_mime != expected_mime:
@@ -138,7 +155,7 @@ def validate_file(
         file_data: Base64 encoded string or raw bytes
         mime_type: Expected MIME type (e.g., 'application/pdf')
         max_size: Maximum file size in bytes
-        strict_mime: If True, validate MIME type strictly
+        strict_mime: If True, validate MIME type strictly (requires python-magic)
 
     Returns:
         bytes: Validated and decoded file content
@@ -153,11 +170,10 @@ def validate_file(
     if mime_type == "application/pdf":
         validate_pdf_signature(decoded_data)
 
-        if strict_mime:
-            try:
-                validate_mime_type(decoded_data, mime_type)
-            except ImportError:
-                logger.warning("python-magic not installed, skipping strict MIME check")
+        if strict_mime and MAGIC_AVAILABLE:
+            validate_mime_type(decoded_data, mime_type)
+        elif strict_mime and not MAGIC_AVAILABLE:
+            logger.warning("Strict MIME check requested but python-magic not available")
 
     logger.info(f"File validated successfully: {len(decoded_data)} bytes")
     return decoded_data
