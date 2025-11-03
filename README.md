@@ -65,10 +65,9 @@ Edit `.env` with your settings:
 
 ```env
 GEMINI_API_KEY=your_api_key_here
-LOG_LEVEL=INFO
-MAX_CHUNK_SIZE=2000
-MAX_FILE_SIZE=10485760
 ```
+
+Visit the [app/core/config.py](app/core/config.py) file to adjust other settings as needed.
 
 ## 🚀 Usage
 
