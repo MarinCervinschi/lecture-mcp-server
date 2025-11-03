@@ -1,6 +1,7 @@
 from fastapi import APIRouter, status
 from app.models.responses import HealthResponse
 from app.core.config import settings
+from app.services.gemini_client import get_gemini_client
 from datetime import datetime, timezone
 import logging
 
@@ -13,47 +14,30 @@ router = APIRouter()
     response_model=HealthResponse,
     status_code=status.HTTP_200_OK,
     summary="Health Check",
-    description="Check if the service is running and healthy"
+    description="Check if the service is running and dependencies are available",
 )
 async def health_check() -> HealthResponse:
     """
     Health check endpoint.
     
     Returns:
-        HealthResponse: Service health status
+        HealthResponse: Service health status with dependency checks
     """
-    logger.debug("Health check requested")
+    gemini_status = "unknown"
+    try:
+        client = get_gemini_client()
+        gemini_available = await client.test_connection()
+        gemini_status = "available" if gemini_available else "unavailable"
+    except Exception as e:
+        logger.warning(f"Gemini health check failed: {str(e)}")
+        gemini_status = "error"
     
     return HealthResponse(
         status="healthy",
         timestamp=datetime.utcnow(),
         version=settings.VERSION,
-        service=settings.PROJECT_NAME
+        service=settings.PROJECT_NAME,
+        dependencies={
+            "gemini_api": gemini_status
+        }
     )
-
-
-@router.get(
-    "/ready",
-    status_code=status.HTTP_200_OK,
-    summary="Readiness Check",
-    description="Check if the service is ready to accept requests"
-)
-async def readiness_check() -> dict:
-    """
-    Readiness check endpoint.
-    
-    Returns:
-        dict: Readiness status with dependencies
-    """
-    checks = {
-        "api": "ready",
-        "gemini": "not_configured" if not settings.GEMINI_API_KEY else "ready",
-    }
-    
-    all_ready = all(v == "ready" for v in checks.values())
-    
-    return {
-        "status": "ready" if all_ready else "not_ready",
-        "checks": checks,
-        "timestamp": datetime.now(timezone.utc).isoformat()
-    }

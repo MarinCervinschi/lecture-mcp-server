@@ -12,19 +12,25 @@ class Settings(BaseSettings):
     DESCRIPTION: str = "MCP Server for PDF lecture processing with Gemini AI"
 
     # Environment
-    ENVIRONMENT: str = "development"  # development, staging, production
+    ENVIRONMENT: str = "development"
 
     # Gemini API
     GEMINI_API_KEY: Optional[str] = None
-    GEMINI_MODEL: str = "gemini-1.5-pro"
+    GEMINI_MODEL: str = "gemini-2.5-flash"
+    GEMINI_TEMPERATURE: float = 0.7
+    GEMINI_MAX_TOKENS: int = 8192
+    GEMINI_TIMEOUT: int = 60  # seconds
+
+    # Rate Limiting
+    GEMINI_MAX_REQUESTS_PER_MINUTE: int = 60
+    GEMINI_MAX_TOKENS_PER_MINUTE: int = 32000
 
     # Processing
     MAX_CHUNK_SIZE: int = 2000
     MAX_FILE_SIZE: int = 10 * 1024 * 1024  # 10MB
-    UPLOAD_DIR: str = "uploads"
 
     # Server
-    HOST: str = "0.0.0.0"
+    HOST: str = "127.0.0.1"
     PORT: int = 8000
     RELOAD: bool = True
     WORKERS: int = 1

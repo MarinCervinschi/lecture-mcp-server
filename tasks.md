@@ -11,27 +11,27 @@
 
 ### Task 1.2: MCP Server Skeleton
 **Description**: Implement the basic MCP protocol structure without business logic
-- [ ] Research MCP specification and requirements
-- [ ] Create MCP tool discovery endpoint
-- [ ] Implement basic MCP response format
-- [ ] Set up MCP error handling structure
-- [ ] Create MCP tool schema definitions
+- [x] Research MCP specification and requirements
+- [x] Create MCP tool discovery endpoint
+- [x] Implement basic MCP response format
+- [x] Set up MCP error handling structure
+- [x] Create MCP tool schema definitions
 
 ### Task 1.3: PDF Processing Foundation
 **Description**: Implement basic PDF text extraction without complex parsing
-- [ ] Choose and integrate PDF library (PyPDF2/pdfplumber)
-- [ ] Create PDF upload endpoint with validation
-- [ ] Implement basic text extraction from PDF pages
-- [ ] Handle common PDF extraction errors
-- [ ] Add file type validation and security checks
+- [x] Choose and integrate PDF library (PyPDF2/pdfplumber)
+- [x] Create PDF upload endpoint with validation
+- [x] Implement basic text extraction from PDF pages
+- [x] Handle common PDF extraction errors
+- [x] Add file type validation and security checks
 
 ### Task 1.4: Gemini API Client
 **Description**: Set up the Gemini API integration with basic functionality
-- [ ] Create Gemini API client class
-- [ ] Implement authentication and API key management
-- [ ] Add basic prompt template structure
-- [ ] Create error handling for API failures
-- [ ] Implement rate limiting awareness
+- [x] Create Gemini API client class
+- [x] Implement authentication and API key management
+- [x] Add basic prompt template structure
+- [x] Create error handling for API failures
+- [x] Implement rate limiting awareness
 
 ## Phase 2: Core Processing & Chunking
 

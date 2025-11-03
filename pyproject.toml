@@ -5,11 +5,13 @@ description = "MCP Server for PDF lecture processing with Gemini AI"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "aiohttp>=3.13.2",
     "fastapi>=0.120.4",
-    "google-generativeai>=0.8.5",
+    "google-genai>=1.47.0",
     "pdfplumber>=0.11.7",
     "pydantic-settings>=2.11.0",
     "pypdf2>=3.0.1",
+    "python-magic>=0.4.27",
     "python-multipart>=0.0.20",
     "uvicorn[standard]>=0.38.0",
 ]
