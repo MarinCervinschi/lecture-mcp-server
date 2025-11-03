@@ -1,9 +1,11 @@
-from fastapi import APIRouter, status
-from app.models.responses import HealthResponse
-from app.core.config import settings
-from app.services.gemini_client import get_gemini_client
-from datetime import datetime, timezone
 import logging
+from datetime import datetime
+
+from fastapi import APIRouter, status
+
+from app.core.config import settings
+from app.models.responses import HealthResponse
+from app.services.gemini_client import get_gemini_client
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -19,7 +21,7 @@ router = APIRouter()
 async def health_check() -> HealthResponse:
     """
     Health check endpoint.
-    
+
     Returns:
         HealthResponse: Service health status with dependency checks
     """
@@ -31,13 +33,11 @@ async def health_check() -> HealthResponse:
     except Exception as e:
         logger.warning(f"Gemini health check failed: {str(e)}")
         gemini_status = "error"
-    
+
     return HealthResponse(
         status="healthy",
         timestamp=datetime.utcnow(),
         version=settings.VERSION,
         service=settings.PROJECT_NAME,
-        dependencies={
-            "gemini_api": gemini_status
-        }
+        dependencies={"gemini_api": gemini_status},
     )

@@ -1,16 +1,17 @@
+import logging
+import time
+
 from fastapi import APIRouter, HTTPException, status
+
+from app.core.config import settings
 from app.models.mcp import (
-    ToolSchema,
     ToolDiscoveryResponse,
     ToolExecutionRequest,
     ToolExecutionResponse,
     ToolExecutionStatus,
-    MCPError,
+    ToolSchema,
 )
 from app.services.mcp_registry import mcp_registry
-from app.core.config import settings
-import logging
-import time
 
 logger = logging.getLogger(__name__)
 router = APIRouter()

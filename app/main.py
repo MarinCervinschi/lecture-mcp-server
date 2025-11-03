@@ -1,13 +1,14 @@
+import logging
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Request, status
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from fastapi.exceptions import RequestValidationError
-from contextlib import asynccontextmanager
-import logging
 
+from app.api import health, mcp
 from app.core.config import settings
 from app.core.logging import setup_logging
-from app.api import health, mcp
 from app.models.responses import ErrorResponse
 
 setup_logging()

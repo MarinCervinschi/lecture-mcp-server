@@ -1,8 +1,9 @@
-import pdfplumber
 import io
-from typing import List, Dict, Any
-from dataclasses import dataclass
 import logging
+from dataclasses import dataclass
+from typing import Any, Dict, List
+
+import pdfplumber
 
 logger = logging.getLogger(__name__)
 
