@@ -19,11 +19,11 @@
 
 ### Task 1.3: PDF Processing Foundation
 **Description**: Implement basic PDF text extraction without complex parsing
-- [ ] Choose and integrate PDF library (PyPDF2/pdfplumber)
-- [ ] Create PDF upload endpoint with validation
-- [ ] Implement basic text extraction from PDF pages
-- [ ] Handle common PDF extraction errors
-- [ ] Add file type validation and security checks
+- [x] Choose and integrate PDF library (PyPDF2/pdfplumber)
+- [x] Create PDF upload endpoint with validation
+- [x] Implement basic text extraction from PDF pages
+- [x] Handle common PDF extraction errors
+- [x] Add file type validation and security checks
 
 ### Task 1.4: Gemini API Client
 **Description**: Set up the Gemini API integration with basic functionality
