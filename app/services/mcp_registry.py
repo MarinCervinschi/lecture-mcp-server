@@ -1,38 +1,41 @@
 from typing import Dict, Optional, List
+from app.mcp_tools.base import Tool
+from app.mcp_tools.pdf_to_text import PDFToTextTool
+from app.mcp_tools.filter_content import FilterContentTool
+from app.mcp_tools.text_to_markdown import TextToMarkdownTool
 from app.models.mcp import ToolSchema
-from app.mcp_tools.tools import get_all_tools
 import logging
 
 logger = logging.getLogger(__name__)
 
 
 class MCPToolRegistry:
-    """
-    Registry for MCP tools.
-
-    Manages tool registration, discovery, and retrieval.
-    """
+    """Registry for MCP tools."""
 
     def __init__(self):
         """Initialize the registry and load default tools."""
-        self._tools: Dict[str, ToolSchema] = {}
+        self._tools: Dict[str, Tool] = {}
         self._register_default_tools()
 
     def _register_default_tools(self) -> None:
-        """Register all default tools from mcp_tools module."""
-        tools = get_all_tools()
+        """Register all default tools."""
+        tools = [
+            PDFToTextTool(),
+            FilterContentTool(),
+            TextToMarkdownTool(),
+        ]
 
         for tool in tools:
-            self._register_tool(tool)
+            self.register_tool(tool)
 
         logger.info(f"Registered {len(self._tools)} default MCP tools")
 
-    def _register_tool(self, tool: ToolSchema) -> None:
+    def register_tool(self, tool: Tool) -> None:
         """
         Register a new tool.
 
         Args:
-            tool: Tool schema to register
+            tool: Tool instance to register
         """
         if tool.name in self._tools:
             logger.warning(f"Tool '{tool.name}' already registered, overwriting")
@@ -40,7 +43,7 @@ class MCPToolRegistry:
         self._tools[tool.name] = tool
         logger.debug(f"Registered tool: {tool.name}")
 
-    def get_tool(self, name: str) -> Optional[ToolSchema]:
+    def get_tool(self, name: str) -> Optional[Tool]:
         """
         Get a tool by name.
 
@@ -48,30 +51,60 @@ class MCPToolRegistry:
             name: Tool name
 
         Returns:
-            Optional[ToolSchema]: Tool schema if found, None otherwise
+            Optional[Tool]: Tool instance if found, None otherwise
         """
         return self._tools.get(name)
 
-    def list_tools(self) -> List[ToolSchema]:
+    def get_tool_schema(self, name: str) -> Optional[ToolSchema]:
         """
-        List all registered tools.
-
-        Returns:
-            List[ToolSchema]: List of all registered tools
-        """
-        return list(self._tools.values())
-
-    def tool_exists(self, name: str) -> bool:
-        """
-        Check if a tool exists.
+        Get a tool schema by name.
 
         Args:
             name: Tool name
 
         Returns:
-            bool: True if tool exists, False otherwise
+            Optional[ToolSchema]: Tool schema if found, None otherwise
         """
-        return name in self._tools
+        tool = self.get_tool(name)
+        return tool.schema if tool else None
+
+    def list_tools(self) -> List[Tool]:
+        """
+        List all registered tools.
+
+        Returns:
+            List[Tool]: List of all registered tools
+        """
+        return list(self._tools.values())
+
+    def list_tool_schemas(self) -> List[ToolSchema]:
+        """
+        List all tool schemas.
+
+        Returns:
+            List[ToolSchema]: List of all tool schemas
+        """
+        return [tool.schema for tool in self._tools.values()]
+
+    async def execute_tool(self, name: str, parameters: Dict) -> Dict:
+        """
+        Execute a tool by name.
+
+        Args:
+            name: Tool name
+            parameters: Tool parameters
+
+        Returns:
+            Dict: Execution result
+
+        Raises:
+            ValueError: If tool not found
+        """
+        tool = self.get_tool(name)
+        if not tool:
+            raise ValueError(f"Tool '{name}' not found")
+
+        return await tool.run(parameters)
 
 
 mcp_registry = MCPToolRegistry()
