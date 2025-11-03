@@ -16,7 +16,14 @@ class Settings(BaseSettings):
 
     # Gemini API
     GEMINI_API_KEY: Optional[str] = None
-    GEMINI_MODEL: str = "gemini-1.5-pro"
+    GEMINI_MODEL: str = "gemini-2.5-flash"
+    GEMINI_TEMPERATURE: float = 0.7
+    GEMINI_MAX_TOKENS: int = 8192
+    GEMINI_TIMEOUT: int = 60  # seconds
+
+    # Rate Limiting
+    GEMINI_MAX_REQUESTS_PER_MINUTE: int = 60
+    GEMINI_MAX_TOKENS_PER_MINUTE: int = 32000
 
     # Processing
     MAX_CHUNK_SIZE: int = 2000
