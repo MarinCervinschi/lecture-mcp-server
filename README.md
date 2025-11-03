@@ -147,9 +147,9 @@ uv run mypy app/
 
 ## 📖 Documentation
 
-- [Project Requirements](requirements.md)
-- [Task Breakdown](tasks.md)
-- [API Documentation](http://localhost:8000/docs) (when server is running)
+- [Project Requirements](docs/requirements.md)
+- [Task Breakdown](docs/tasks.md)
+- [API Documentation](http://localhost:8000/api/redoc) (when server is running)
 
 ## 🤝 Contributing
 
