@@ -16,6 +16,12 @@ from app.utils.file_utils import FileValidationError, validate_file
 logger = logging.getLogger(__name__)
 
 
+class PDFToTextParameters(Dict[str, Any]):
+    """Parameters for PDF to text extraction tool."""
+
+    file_data: str  # Base64 encoded PDF file content
+
+
 class PDFToTextResult(ToolExecutionResult):
     """Result of PDF to text extraction and chunking."""
 
@@ -57,7 +63,7 @@ class PDFToTextTool(Tool):
             ],
         )
 
-    async def execute(self, parameters: Dict[str, Any]) -> PDFToTextResult:
+    async def execute(self, parameters: PDFToTextParameters) -> PDFToTextResult:
         """
         Extract PDF text and create LLM-ready chunks.
 
