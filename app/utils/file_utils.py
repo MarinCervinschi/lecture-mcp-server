@@ -21,12 +21,12 @@ class FileValidationError(Exception):
     pass
 
 
-def decode_file_data(file_data: str | bytes) -> bytes:
+def decode_file_data(file_data: str) -> bytes:
     """
-    Decode file data from base64 string or return bytes as-is.
+    Decode file data from base64 string.
 
     Args:
-        file_data: Base64 encoded string or raw bytes
+        file_data: Base64 encoded string
 
     Returns:
         bytes: Decoded file content
@@ -35,20 +35,13 @@ def decode_file_data(file_data: str | bytes) -> bytes:
         FileValidationError: If decoding fails
     """
     try:
-        if isinstance(file_data, str):
-            return base64.b64decode(file_data)
-        elif isinstance(file_data, bytes):
-            return file_data
-        else:
-            raise FileValidationError(
-                f"Invalid file_data type: {type(file_data)}. Expected str or bytes"
-            )
+        return base64.b64decode(file_data)
     except Exception as e:
         logger.error(f"Failed to decode file data: {str(e)}")
         raise FileValidationError(f"Failed to decode file data: {str(e)}")
 
 
-def validate_file_size(file_data: bytes, max_size: Optional[int] = None) -> None:
+def validate_file_size(file_data: bytes) -> None:
     """
     Validate file size.
 
@@ -59,7 +52,7 @@ def validate_file_size(file_data: bytes, max_size: Optional[int] = None) -> None
     Raises:
         FileValidationError: If file is too large
     """
-    max_size = max_size or settings.MAX_FILE_SIZE
+    max_size = settings.MAX_FILE_SIZE
     file_size = len(file_data)
 
     if file_size > max_size:
@@ -102,11 +95,6 @@ def detect_mime_type(file_data: bytes) -> str:
     Returns:
         str: Detected MIME type
     """
-    if not MAGIC_AVAILABLE:
-        logger.debug("python-magic not available, using basic detection")
-        if file_data.startswith(b"%PDF-"):
-            return "application/pdf"
-        return "application/octet-stream"
 
     try:
         mime = magic.Magic(mime=True)
@@ -129,9 +117,6 @@ def validate_mime_type(file_data: bytes, expected_mime: str) -> None:
     Raises:
         FileValidationError: If MIME type doesn't match
     """
-    if not MAGIC_AVAILABLE:
-        logger.warning("python-magic not available, skipping MIME type validation")
-        return
 
     detected_mime = detect_mime_type(file_data)
 
@@ -144,16 +129,15 @@ def validate_mime_type(file_data: bytes, expected_mime: str) -> None:
 
 
 def validate_file(
-    file_data: str | bytes,
+    file_data: str,
     mime_type: Optional[str] = None,
-    max_size: Optional[int] = None,
     strict_mime: bool = True,
 ) -> bytes:
     """
     Validate and decode file data.
 
     Args:
-        file_data: Base64 encoded string or raw bytes
+        file_data: Base64 encoded string
         mime_type: Expected MIME type (e.g., 'application/pdf')
         max_size: Maximum file size in bytes
         strict_mime: If True, validate MIME type strictly (requires python-magic)
@@ -166,7 +150,7 @@ def validate_file(
     """
     decoded_data = decode_file_data(file_data)
 
-    validate_file_size(decoded_data, max_size)
+    validate_file_size(decoded_data)
 
     if mime_type == "application/pdf":
         validate_pdf_signature(decoded_data)
