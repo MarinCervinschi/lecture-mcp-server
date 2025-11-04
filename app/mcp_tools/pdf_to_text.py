@@ -71,7 +71,7 @@ class PDFToTextTool(Tool):
 
         try:
             pdf_data = validate_file(
-                parameters["file_data"], mime_type="application/pdf", strict_mime=True
+                parameters["file_data"], mime_type="application/pdf"
             )
 
             metadata = pdf_service.get_pdf_metadata(pdf_data)

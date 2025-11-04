@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, List, Optional
 
-from app.services.token_counter import get_token_counter
+from app.utils.token_counter import get_token_counter
 
 if TYPE_CHECKING:
     from app.models.pdf import PDFPage, PDFChunk
