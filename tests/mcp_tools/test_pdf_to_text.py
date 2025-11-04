@@ -1,6 +1,6 @@
 import pytest
 
-from app.mcp_tools.pdf_to_text import PDFToTextParameters, PDFToTextTool
+from app.mcp_tools.pdf_to_text import PDFToTextTool
 from app.models.pdf import PDFChunk
 from app.services.pdf_service import PDFProcessingError
 from app.utils.file_utils import FileValidationError
@@ -32,7 +32,7 @@ class TestPDFToTextTool:
         self, pdf_tool: PDFToTextTool, sample_pdf_base64: str
     ):
         """Test successful PDF extraction."""
-        parameters = PDFToTextParameters(file_data=sample_pdf_base64)
+        parameters = {"file_data": sample_pdf_base64}
         result = await pdf_tool.execute(parameters)
 
         assert result.total_chunks > 0
@@ -50,7 +50,7 @@ class TestPDFToTextTool:
         self, pdf_tool: PDFToTextTool, sample_pdf_base64: str
     ):
         """Test PDF with multiple pages creates multiple chunks."""
-        parameters = PDFToTextParameters(file_data=sample_pdf_base64)
+        parameters = {"file_data": sample_pdf_base64}
 
         result = await pdf_tool.execute(parameters)
 
@@ -63,7 +63,7 @@ class TestPDFToTextTool:
         self, pdf_tool: PDFToTextTool, corrupted_base64: str
     ):
         """Test execution with invalid base64 raises error."""
-        parameters = PDFToTextParameters(file_data=corrupted_base64)
+        parameters = {"file_data": corrupted_base64}
 
         with pytest.raises((FileValidationError, ValueError)):
             await pdf_tool.execute(parameters)
@@ -73,7 +73,7 @@ class TestPDFToTextTool:
         self, pdf_tool: PDFToTextTool, invalid_pdf_base64: str
     ):
         """Test execution with non-PDF content raises error."""
-        parameters = PDFToTextParameters(file_data=invalid_pdf_base64)
+        parameters = {"file_data": invalid_pdf_base64}
 
         with pytest.raises((FileValidationError, PDFProcessingError)):
             await pdf_tool.execute(parameters)
@@ -81,9 +81,9 @@ class TestPDFToTextTool:
     @pytest.mark.asyncio
     async def test_execute_missing_file_data(self, pdf_tool: PDFToTextTool):
         """Test execution without file_data parameter."""
-        parameters = PDFToTextParameters()
+        parameters = {"file_data": None}
 
-        with pytest.raises(KeyError):
+        with pytest.raises(ValueError):
             await pdf_tool.execute(parameters)
 
     @pytest.mark.asyncio
@@ -91,7 +91,7 @@ class TestPDFToTextTool:
         self, pdf_tool: PDFToTextTool, sample_pdf_base64: str
     ):
         """Test that chunks have all required fields."""
-        parameters = PDFToTextParameters(file_data=sample_pdf_base64)
+        parameters = {"file_data": sample_pdf_base64}
 
         result = await pdf_tool.execute(parameters)
 
@@ -107,7 +107,7 @@ class TestPDFToTextTool:
         self, pdf_tool: PDFToTextTool, sample_pdf_base64: str
     ):
         """Test metadata has required information."""
-        parameters = PDFToTextParameters(file_data=sample_pdf_base64)
+        parameters = {"file_data": sample_pdf_base64}
 
         result = await pdf_tool.execute(parameters)
 
