@@ -105,12 +105,18 @@ class ToolExecutionStatus(str, Enum):
     RUNNING = "running"
 
 
+class ToolExecutionResult(BaseModel):
+    """Result of tool execution."""
+
+    pass
+
+
 class ToolExecutionResponse(BaseModel):
     """Response from tool execution."""
 
     status: ToolExecutionStatus = Field(..., description="Execution status")
     tool: str = Field(..., description="Tool that was executed")
-    result: Optional[Dict[str, Any]] = Field(
+    result: Optional[ToolExecutionResult] = Field(
         default=None, description="Execution result"
     )
     error: Optional[str] = Field(default=None, description="Error message if failed")

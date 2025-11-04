@@ -5,7 +5,7 @@ from app.mcp_tools.base import Tool
 from app.mcp_tools.filter_content import FilterContentTool
 from app.mcp_tools.pdf_to_text import PDFToTextTool
 from app.mcp_tools.text_to_markdown import TextToMarkdownTool
-from app.models.mcp import ToolSchema
+from app.models.mcp import ToolExecutionResult, ToolSchema
 
 logger = logging.getLogger(__name__)
 
@@ -87,7 +87,7 @@ class MCPToolRegistry:
         """
         return [tool.schema for tool in self._tools.values()]
 
-    async def execute_tool(self, name: str, parameters: Dict) -> Dict:
+    async def execute_tool(self, name: str, parameters: Dict) -> ToolExecutionResult:
         """
         Execute a tool by name.
 

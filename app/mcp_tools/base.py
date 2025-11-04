@@ -2,7 +2,7 @@ import logging
 from abc import ABC, abstractmethod
 from typing import Any, Dict
 
-from app.models.mcp import ToolSchema
+from app.models.mcp import ToolExecutionResult, ToolSchema
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ class Tool(ABC):
         pass
 
     @abstractmethod
-    async def execute(self, parameters: Dict[str, Any]) -> Dict[str, Any]:
+    async def execute(self, parameters: Dict[str, Any]) -> ToolExecutionResult:
         """
         Execute the tool with given parameters.
 
@@ -73,7 +73,7 @@ class Tool(ABC):
 
         logger.debug(f"Parameters validated for tool: {self.name}")
 
-    async def run(self, parameters: Dict[str, Any]) -> Dict[str, Any]:
+    async def run(self, parameters: Dict[str, Any]) -> ToolExecutionResult:
         """
         Run the tool with validation.
 
