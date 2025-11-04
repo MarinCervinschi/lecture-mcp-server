@@ -42,14 +42,9 @@ class PDFService:
                     try:
                         text = page.extract_text() or ""
 
-                        width = page.width
-                        height = page.height
-
                         pdf_page = PDFPage(
                             page_number=page_num,
                             text=text.strip(),
-                            width=width,
-                            height=height,
                             char_count=len(text),
                         )
 
@@ -62,8 +57,6 @@ class PDFService:
                             PDFPage(
                                 page_number=page_num,
                                 text="",
-                                width=0,
-                                height=0,
                                 char_count=0,
                             )
                         )
@@ -126,26 +119,6 @@ class PDFService:
         except Exception as e:
             logger.error(f"Failed to extract metadata: {str(e)}")
             raise PDFProcessingError(f"Failed to extract PDF metadata: {str(e)}")
-
-    def validate_pdf(self, pdf_data: bytes) -> bool:
-        """
-        Validate if data is a valid PDF.
-
-        Args:
-            pdf_data: PDF file as bytes
-
-        Returns:
-            bool: True if valid PDF
-        """
-        try:
-            pdf_file = io.BytesIO(pdf_data)
-            with pdfplumber.open(pdf_file) as pdf:
-                # Try to access pages
-                _ = len(pdf.pages)
-            return True
-        except Exception as e:
-            logger.warning(f"PDF validation failed: {str(e)}")
-            return False
 
 
 from functools import lru_cache

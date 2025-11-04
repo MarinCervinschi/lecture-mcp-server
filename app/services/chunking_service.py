@@ -178,7 +178,6 @@ class ChunkingService:
             token_count=token_count,
             char_count=len(full_content),
             page_range=page_range,
-            page_numbers=page_numbers,
             has_overlap=has_overlap,
             overlap_content=overlap_content if has_overlap else None,
         )
@@ -241,7 +240,6 @@ class ChunkingService:
                         token_count=current_tokens,
                         char_count=len(chunk_content),
                         page_range=f"{page.page_number}",
-                        page_numbers=[page.page_number],
                         has_overlap=False,
                     )
                 )
@@ -261,7 +259,6 @@ class ChunkingService:
                     token_count=current_tokens,
                     char_count=len(chunk_content),
                     page_range=f"{page.page_number}",
-                    page_numbers=[page.page_number],
                     has_overlap=False,
                 )
             )

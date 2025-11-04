@@ -99,8 +99,6 @@ class TestPDFToTextTool:
             assert chunk.chunk_index == i
             assert isinstance(chunk.content, str)
             assert len(chunk.content) > 0
-            assert chunk.page_numbers[0] >= 1
-            assert chunk.page_numbers[-1] >= chunk.page_numbers[0]
 
     @pytest.mark.asyncio
     async def test_metadata_contains_expected_fields(
