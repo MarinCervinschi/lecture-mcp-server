@@ -1,13 +1,15 @@
 import logging
 from abc import ABC, abstractmethod
-from typing import Any, Dict
+from typing import Any, Dict, Generic, TypeVar
 
-from app.models.mcp import ToolExecutionResult, ToolSchema
+from app.models.mcp import ToolSchema
 
 logger = logging.getLogger(__name__)
 
+ToolResult = TypeVar("ToolResult")
 
-class Tool(ABC):
+
+class Tool(ABC, Generic[ToolResult]):
     """
     Abstract base class for MCP tools.
 
@@ -28,7 +30,7 @@ class Tool(ABC):
         pass
 
     @abstractmethod
-    async def execute(self, parameters: Dict[str, Any]) -> ToolExecutionResult:
+    async def execute(self, parameters: Dict[str, Any]) -> ToolResult:
         """
         Execute the tool with given parameters.
 
@@ -71,9 +73,13 @@ class Tool(ABC):
         if missing:
             raise ValueError(f"Missing required parameters: {', '.join(missing)}")
 
+        extra = set(parameters.keys()) - set(required_params)
+        if extra:
+            logger.warning(f"Extra parameters provided: {', '.join(extra)}")
+
         logger.debug(f"Parameters validated for tool: {self.name}")
 
-    async def run(self, parameters: Dict[str, Any]) -> ToolExecutionResult:
+    async def run(self, parameters: Dict[str, Any]) -> ToolResult:
         """
         Run the tool with validation.
 

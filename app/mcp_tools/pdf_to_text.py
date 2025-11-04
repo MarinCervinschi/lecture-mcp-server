@@ -1,9 +1,10 @@
 import logging
 from typing import Any, Dict, List
 
+from pydantic import BaseModel, Field
+
 from app.mcp_tools.base import Tool
 from app.models.mcp import (
-    ToolExecutionResult,
     ToolParameter,
     ToolParameterType,
     ToolSchema,
@@ -15,21 +16,23 @@ from app.utils.file_utils import FileValidationError, validate_file
 logger = logging.getLogger(__name__)
 
 
-class PDFToTextParameters(Dict[str, Any]):
+class PDFToTextParameters(BaseModel):
     """Parameters for PDF to text extraction tool."""
 
-    file_data: str  # Base64 encoded PDF file content
+    file_data: str = Field(..., description="Base64 encoded PDF file content")
 
 
-class PDFToTextResult(ToolExecutionResult):
+class PDFToTextResult(BaseModel):
     """Result of PDF to text extraction and chunking."""
 
-    metadata: Dict[str, Any]
-    total_chunks: int
-    chunks: List[PDFChunk]
+    metadata: Dict[str, Any] = Field(
+        ..., description="Metadata about the processed PDF"
+    )
+    total_chunks: int = Field(..., description="Total number of chunks created")
+    chunks: List[PDFChunk] = Field(..., description="List of extracted PDF chunks")
 
 
-class PDFToTextTool(Tool):
+class PDFToTextTool(Tool[PDFToTextResult]):
     """
     Extract text from PDF and split into LLM-ready chunks.
 
@@ -64,7 +67,7 @@ class PDFToTextTool(Tool):
             ],
         )
 
-    async def execute(self, parameters: PDFToTextParameters) -> PDFToTextResult:
+    async def execute(self, parameters: Dict[str, Any]) -> PDFToTextResult:
         """
         Extract PDF text and create LLM-ready chunks.
 
@@ -77,8 +80,10 @@ class PDFToTextTool(Tool):
         logger.info("Executing PDF to text extraction with smart chunking")
 
         try:
+            validated_params = PDFToTextParameters(**parameters)
+
             pdf_data = validate_file(
-                parameters["file_data"], mime_type="application/pdf"
+                validated_params.file_data, mime_type="application/pdf"
             )
 
             metadata = self.pdf_service.get_pdf_metadata(pdf_data)
