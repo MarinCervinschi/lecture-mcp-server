@@ -108,4 +108,10 @@ class MCPToolRegistry:
         return await tool.run(parameters)
 
 
-mcp_registry = MCPToolRegistry()
+from functools import lru_cache
+
+
+@lru_cache(maxsize=1)
+def get_mcp_registry() -> MCPToolRegistry:
+    """Get or create MCPToolRegistry singleton."""
+    return MCPToolRegistry()

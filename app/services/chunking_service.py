@@ -282,41 +282,11 @@ class ChunkingService:
 
         return f"{page_numbers[0]}-{page_numbers[-1]}"
 
-    def analyze_chunking_stats(self, chunks: List["PDFChunk"]) -> dict:
-        """
-        Analyze chunking statistics.
 
-        Args:
-            chunks: List of chunks to analyze
-
-        Returns:
-            dict: Statistics about the chunking
-        """
-        if not chunks:
-            return {}
-
-        token_counts = [c.token_count for c in chunks]
-
-        return {
-            "total_chunks": len(chunks),
-            "total_tokens": sum(token_counts),
-            "avg_tokens_per_chunk": sum(token_counts) // len(chunks),
-            "min_tokens": min(token_counts),
-            "max_tokens": max(token_counts),
-            "chunks_with_overlap": sum(1 for c in chunks if c.has_overlap),
-            "avg_pages_per_chunk": sum(len(c.page_numbers) for c in chunks)
-            / len(chunks),
-        }
+from functools import lru_cache
 
 
-_chunking_service: Optional[ChunkingService] = None
-
-
+@lru_cache(maxsize=1)
 def get_chunking_service() -> ChunkingService:
-    """Get or create ChunkingService instance."""
-    global _chunking_service
-
-    if _chunking_service is None:
-        _chunking_service = ChunkingService()
-
-    return _chunking_service
+    """Get or create ChunkingService singleton."""
+    return ChunkingService()

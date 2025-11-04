@@ -9,8 +9,7 @@ from app.models.mcp import (
     ToolSchema,
 )
 from app.models.pdf import PDFChunk
-from app.services.chunking_service import get_chunking_service
-from app.services.pdf_service import PDFProcessingError, pdf_service
+from app.services.pdf_service import PDFProcessingError, get_pdf_service
 from app.utils.file_utils import FileValidationError, validate_file
 
 logger = logging.getLogger(__name__)
@@ -27,7 +26,6 @@ class PDFToTextResult(ToolExecutionResult):
 
     metadata: Dict[str, Any]
     total_chunks: int
-    statistics: Dict[str, Any]
     chunks: List[PDFChunk]
 
 
@@ -41,6 +39,9 @@ class PDFToTextTool(Tool):
     - Adds overlap for context preservation
     - Returns structured data for client processing
     """
+
+    def __init__(self):
+        self.pdf_service = get_pdf_service()
 
     @property
     def schema(self) -> ToolSchema:
@@ -80,33 +81,16 @@ class PDFToTextTool(Tool):
                 parameters["file_data"], mime_type="application/pdf"
             )
 
-            metadata = pdf_service.get_pdf_metadata(pdf_data)
-            chunks = pdf_service.extract_text_chunked(pdf_data)
-
-            chunking_service = get_chunking_service()
-            stats = chunking_service.analyze_chunking_stats(chunks)
+            metadata = self.pdf_service.get_pdf_metadata(pdf_data)
+            chunks = self.pdf_service.extract_text_chunked(pdf_data)
 
             pdf_result = PDFToTextResult(
                 metadata=metadata,
                 total_chunks=len(chunks),
-                statistics={
-                    "total_tokens": stats["total_tokens"],
-                    "avg_tokens_per_chunk": stats["avg_tokens_per_chunk"],
-                    "token_range": {
-                        "min": stats["min_tokens"],
-                        "max": stats["max_tokens"],
-                    },
-                    "chunks_with_overlap": stats["chunks_with_overlap"],
-                    "avg_pages_per_chunk": round(stats["avg_pages_per_chunk"], 1),
-                },
                 chunks=chunks,
             )
 
-            logger.info(
-                f"Extraction complete: {len(chunks)} chunks, "
-                f"{stats['total_tokens']} total tokens, "
-                f"avg {stats['avg_tokens_per_chunk']} tokens/chunk"
-            )
+            logger.info(f"Extraction complete: {len(chunks)} chunks created from PDF")
 
             return pdf_result
 

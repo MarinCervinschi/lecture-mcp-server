@@ -241,19 +241,10 @@ class GeminiClient:
             return False
 
 
-_gemini_client: Optional[GeminiClient] = None
+from functools import lru_cache
 
 
+@lru_cache(maxsize=1)
 def get_gemini_client() -> GeminiClient:
-    """
-    Get or create Gemini client instance.
-
-    Returns:
-        GeminiClient: Gemini client instance
-    """
-    global _gemini_client
-
-    if _gemini_client is None:
-        _gemini_client = GeminiClient()
-
-    return _gemini_client
+    """Get or create GeminiClient singleton."""
+    return GeminiClient()

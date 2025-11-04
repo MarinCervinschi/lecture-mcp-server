@@ -1,5 +1,4 @@
 import logging
-from typing import Optional
 
 import tiktoken
 
@@ -93,14 +92,10 @@ class TokenCounter:
             return text[:char_limit] + ("..." if add_ellipsis else "")
 
 
-_token_counter: Optional[TokenCounter] = None
+from functools import lru_cache
 
 
+@lru_cache(maxsize=1)
 def get_token_counter() -> TokenCounter:
-    """Get or create TokenCounter instance."""
-    global _token_counter
-
-    if _token_counter is None:
-        _token_counter = TokenCounter()
-
-    return _token_counter
+    """Get or create TokenCounter singleton."""
+    return TokenCounter()

@@ -1,13 +1,11 @@
 import io
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import pdfplumber
 
 from app.models.pdf import PDFChunk, PDFPage, PDFProcessingError
-from app.services.chunking_service import (
-    get_chunking_service,
-)
+from app.services.chunking_service import get_chunking_service
 
 logging.getLogger("pdfplumber").setLevel(logging.ERROR)
 logger = logging.getLogger(__name__)
@@ -15,6 +13,9 @@ logger = logging.getLogger(__name__)
 
 class PDFService:
     """Service for PDF text extraction and processing."""
+
+    def __init__(self):
+        self.chunking_service = get_chunking_service()
 
     def extract_text(self, pdf_data: bytes) -> List[PDFPage]:
         """
@@ -87,13 +88,9 @@ class PDFService:
         """
         pages = self.extract_text(pdf_data)
 
-        chunking_service = get_chunking_service()
-        chunks = chunking_service.chunk_pages(pages)
+        chunks = self.chunking_service.chunk_pages(pages)
 
         logger.info(f"Smart chunking: {len(pages)} pages → {len(chunks)} chunks")
-
-        stats = chunking_service.analyze_chunking_stats(chunks)
-        logger.info(f"Chunking stats: {stats}")
 
         return chunks
 
@@ -151,4 +148,10 @@ class PDFService:
             return False
 
 
-pdf_service = PDFService()
+from functools import lru_cache
+
+
+@lru_cache(maxsize=1)
+def get_pdf_service() -> PDFService:
+    """Get or create PDFService singleton."""
+    return PDFService()
