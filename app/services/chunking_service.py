@@ -7,7 +7,6 @@ from app.utils.token_counter import get_token_counter
 
 logger = logging.getLogger(__name__)
 
-
 @dataclass
 class ChunkingConfig:
     """Configuration for document chunking."""
@@ -130,7 +129,6 @@ class ChunkingService:
                     -self.config.overlap_tokens * 4 :
                 ]  # Approx chars
             else:
-                # Add page to current chunk
                 current_pages.append(page)
                 current_tokens += page_token_count
 
