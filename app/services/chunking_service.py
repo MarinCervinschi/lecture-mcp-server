@@ -1,12 +1,9 @@
-from dataclasses import dataclass
-from typing import TYPE_CHECKING, List, Optional
-
-from app.utils.token_counter import get_token_counter
-
-if TYPE_CHECKING:
-    from app.models.pdf import PDFPage, PDFChunk
-
 import logging
+from dataclasses import dataclass
+from typing import List, Optional
+
+from app.models.pdf import PDFChunk, PDFPage
+from app.utils.token_counter import get_token_counter
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +32,7 @@ class ChunkingService:
             f"overlap={self.config.overlap_tokens}"
         )
 
-    def chunk_pages(self, pages: List["PDFPage"]) -> List["PDFChunk"]:
+    def chunk_pages(self, pages: List[PDFPage]) -> List[PDFChunk]:
         """
         Chunk PDF pages intelligently based on token counts.
 
@@ -62,7 +59,7 @@ class ChunkingService:
 
         return chunks
 
-    def _calculate_page_tokens(self, pages: List["PDFPage"]) -> List[int]:
+    def _calculate_page_tokens(self, pages: List[PDFPage]) -> List[int]:
         """Calculate token count for each page."""
         token_counts = []
 
@@ -74,8 +71,8 @@ class ChunkingService:
         return token_counts
 
     def _create_chunks_with_overlap(
-        self, pages: List["PDFPage"], page_tokens: List[int]
-    ) -> List["PDFChunk"]:
+        self, pages: List[PDFPage], page_tokens: List[int]
+    ) -> List[PDFChunk]:
         """
         Create chunks with intelligent overlap.
 
@@ -153,9 +150,9 @@ class ChunkingService:
     def _create_chunk_from_pages(
         self,
         chunks_so_far: int,
-        pages: List["PDFPage"],
+        pages: List[PDFPage],
         overlap_content: Optional[str],
-    ) -> "PDFChunk":
+    ) -> PDFChunk:
         """Create a chunk from a list of pages."""
         content_parts = []
 
@@ -186,7 +183,7 @@ class ChunkingService:
             overlap_content=overlap_content if has_overlap else None,
         )
 
-    def _extract_overlap(self, pages: List["PDFPage"]) -> str:
+    def _extract_overlap(self, pages: List[PDFPage]) -> str:
         """
         Extract overlap content from end of pages.
 
@@ -213,7 +210,7 @@ class ChunkingService:
 
         return overlap
 
-    def _split_large_page(self, page: "PDFPage") -> List["PDFChunk"]:
+    def _split_large_page(self, page: PDFPage) -> List[PDFChunk]:
         """
         Split a single large page into multiple chunks.
 
