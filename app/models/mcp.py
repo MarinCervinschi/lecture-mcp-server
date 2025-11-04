@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Generic, List, Optional, TypeVar
 
 from pydantic import BaseModel, Field
 
@@ -105,20 +105,15 @@ class ToolExecutionStatus(str, Enum):
     RUNNING = "running"
 
 
-class ToolExecutionResult(BaseModel):
-    """Result of tool execution."""
-
-    pass
+ToolResult = TypeVar("ToolResult")
 
 
-class ToolExecutionResponse(BaseModel):
+class ToolExecutionResponse(BaseModel, Generic[ToolResult]):
     """Response from tool execution."""
 
     status: ToolExecutionStatus = Field(..., description="Execution status")
     tool: str = Field(..., description="Tool that was executed")
-    result: Optional[ToolExecutionResult] = Field(
-        default=None, description="Execution result"
-    )
+    result: Optional[ToolResult] = Field(default=None, description="Execution result")
     error: Optional[str] = Field(default=None, description="Error message if failed")
     execution_time: Optional[float] = Field(
         None, description="Execution time in seconds"
