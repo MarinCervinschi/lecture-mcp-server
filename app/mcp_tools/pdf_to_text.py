@@ -1,105 +1,112 @@
 import logging
-from typing import Any, Dict
+from typing import Any, Dict, List
 
-from app.core.config import settings
 from app.mcp_tools.base import Tool
-from app.models.mcp import ToolParameter, ToolParameterType, ToolSchema
+from app.models.mcp import (
+    ToolExecutionResult,
+    ToolParameter,
+    ToolParameterType,
+    ToolSchema,
+)
+from app.models.pdf import PDFChunk
+from app.services.chunking_service import get_chunking_service
 from app.services.pdf_service import PDFProcessingError, pdf_service
 from app.utils.file_utils import FileValidationError, validate_file
 
 logger = logging.getLogger(__name__)
 
 
+class PDFToTextResult(ToolExecutionResult):
+    """Result of PDF to text extraction and chunking."""
+
+    metadata: Dict[str, Any]
+    total_chunks: int
+    statistics: Dict[str, Any]
+    chunks: List[PDFChunk]
+
+
 class PDFToTextTool(Tool):
-    """Tool for extracting text from PDF files."""
+    """
+    Extract text from PDF and split into LLM-ready chunks.
+
+    This tool:
+    - Extracts text from PDF pages
+    - Splits content into token-optimized chunks
+    - Adds overlap for context preservation
+    - Returns structured data for client processing
+    """
 
     @property
     def schema(self) -> ToolSchema:
         """Get tool schema."""
         return ToolSchema(
             name="pdf_to_text",
-            description="Extract text from PDF file with chunking support",
-            version="1.0.0",
+            description=(
+                "Extract text from PDF and chunk for LLM processing. "
+                "Returns token-optimized chunks that fit within LLM context limits."
+            ),
+            version="2.0.0",
             parameters=[
                 ToolParameter(
                     name="file_data",
                     type=ToolParameterType.FILE,
-                    description="PDF file content (base64 encoded string or bytes)",
+                    description="PDF file content (base64 encoded)",
                     required=True,
                     mime_types=["application/pdf"],
-                    max_size=settings.MAX_FILE_SIZE,
-                ),
-                ToolParameter(
-                    name="chunk_size",
-                    type=ToolParameterType.INTEGER,
-                    description="Number of pages per chunk",
-                    required=False,
-                    default=10,
-                ),
-                ToolParameter(
-                    name="page_range",
-                    type=ToolParameterType.STRING,
-                    description="Page range to extract (e.g., '1-5', 'all')",
-                    required=False,
-                    default="all",
-                ),
+                )
             ],
         )
 
-    async def execute(self, parameters: Dict[str, Any]) -> Dict[str, Any]:
+    async def execute(self, parameters: Dict[str, Any]) -> PDFToTextResult:
         """
-        Execute PDF text extraction.
+        Extract PDF text and create LLM-ready chunks.
 
         Args:
-            parameters: Tool parameters including file_data, chunk_size, page_range
+            parameters: Tool parameters
 
         Returns:
-            Dict with extracted text chunks and metadata
-
-        Raises:
-            FileValidationError: If file validation fails
-            PDFProcessingError: If PDF processing fails
+            dict: Extracted chunks with metadata
         """
-        logger.info("Executing PDF to text extraction")
+        logger.info("Executing PDF to text extraction with smart chunking")
 
         try:
             pdf_data = validate_file(
-                parameters["file_data"], mime_type="application/pdf", strict_mime=False
+                parameters["file_data"], mime_type="application/pdf", strict_mime=True
             )
-
-            chunk_size = parameters.get("chunk_size", 10)
-            page_range = parameters.get("page_range", "all")
 
             metadata = pdf_service.get_pdf_metadata(pdf_data)
-            logger.info(f"PDF metadata: {metadata}")
+            chunks = pdf_service.extract_text_chunked(pdf_data)
 
-            chunks = pdf_service.extract_text_chunked(pdf_data, chunk_size=chunk_size)
+            chunking_service = get_chunking_service()
+            stats = chunking_service.analyze_chunking_stats(chunks)
 
-            result = {
-                "metadata": metadata,
-                "total_pages": metadata["page_count"],
-                "total_chunks": len(chunks),
-                "chunks": [
-                    {
-                        "chunk_index": chunk.chunk_index,
-                        "page_range": chunk.page_range,
-                        "text": chunk.total_text,
-                        "char_count": chunk.char_count,
-                        "page_count": len(chunk.pages),
-                    }
-                    for chunk in chunks
-                ],
-            }
-
-            logger.info(
-                f"Extracted {metadata['page_count']} pages in {len(chunks)} chunks"
+            pdf_result = PDFToTextResult(
+                metadata=metadata,
+                total_chunks=len(chunks),
+                statistics={
+                    "total_tokens": stats["total_tokens"],
+                    "avg_tokens_per_chunk": stats["avg_tokens_per_chunk"],
+                    "token_range": {
+                        "min": stats["min_tokens"],
+                        "max": stats["max_tokens"],
+                    },
+                    "chunks_with_overlap": stats["chunks_with_overlap"],
+                    "avg_pages_per_chunk": round(stats["avg_pages_per_chunk"], 1),
+                },
+                chunks=chunks,
             )
 
-            return result
+            logger.info(
+                f"Extraction complete: {len(chunks)} chunks, "
+                f"{stats['total_tokens']} total tokens, "
+                f"avg {stats['avg_tokens_per_chunk']} tokens/chunk"
+            )
 
-        except (FileValidationError, PDFProcessingError) as e:
+            return pdf_result
+
+        except (FileValidationError, PDFProcessingError, ValueError) as e:
             logger.error(f"PDF extraction failed: {str(e)}")
             raise
         except Exception as e:
             logger.error(f"Unexpected error: {str(e)}", exc_info=True)
-            raise PDFProcessingError(f"Failed to extract text from PDF: {str(e)}")
+            raise
