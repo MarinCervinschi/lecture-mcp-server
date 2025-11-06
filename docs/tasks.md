@@ -1,162 +1,227 @@
 # Project Tasks Breakdown
 
-## Phase 1: Foundation & Basic Setup
+## ~~Phase 1: Foundation & Basic Setup~~ ✅ COMPLETED (v0.1.0)
 
-### Task 1.1: Project Initialization
-**Description**: Set up the basic FastAPI project structure with proper organization and dependencies
+### ~~Task 1.1: Project Initialization~~ ✅
 - [x] Create Python project structure with uv
 - [x] Set up basic FastAPI application with routing
 - [x] Configure environment variables and settings management
 - [x] Add basic logging and error handling
 
-### Task 1.2: MCP Server Skeleton
-**Description**: Implement the basic MCP protocol structure without business logic
+### ~~Task 1.2: MCP Server Skeleton~~ ✅
 - [x] Research MCP specification and requirements
 - [x] Create MCP tool discovery endpoint
 - [x] Implement basic MCP response format
 - [x] Set up MCP error handling structure
 - [x] Create MCP tool schema definitions
 
-### Task 1.3: PDF Processing Foundation
-**Description**: Implement basic PDF text extraction without complex parsing
+### ~~Task 1.3: PDF Processing Foundation~~ ✅
 - [x] Choose and integrate PDF library (PyPDF2/pdfplumber)
 - [x] Create PDF upload endpoint with validation
 - [x] Implement basic text extraction from PDF pages
 - [x] Handle common PDF extraction errors
 - [x] Add file type validation and security checks
 
-### Task 1.4: Gemini API Client
-**Description**: Set up the Gemini API integration with basic functionality
+### ~~Task 1.4: Gemini API Client~~ ✅
 - [x] Create Gemini API client class
 - [x] Implement authentication and API key management
 - [x] Add basic prompt template structure
 - [x] Create error handling for API failures
 - [x] Implement rate limiting awareness
 
-## Phase 2: Core Processing & Chunking
+## ~~Phase 2: Core Processing & Chunking~~ ✅ COMPLETED (v0.1.0)
 
-### Task 2.1: Document Chunking Strategy
-**Description**: Implement intelligent document splitting for LLM processing
-- [x] Analyze different chunking strategies (page-based, token-based)
+### ~~Task 2.1: Document Chunking Strategy~~ ✅
+- [x] Analyze different chunking strategies
 - [x] Implement page-based chunking as primary approach
 - [x] Add chunk size optimization for Gemini context windows
 - [x] Create chunk overlap handling for context preservation
 - [x] Test chunking with various document types
 
-### Task 2.2: Basic Markdown Conversion
-**Description**: Implement first version of PDF-to-Markdown using Gemini
+### ~~Task 2.2: Basic Markdown Conversion~~ ✅
 - [x] Design initial prompt for Markdown conversion
 - [x] Create service to send chunks to Gemini API
 - [x] Implement basic response aggregation
-- [x] Handle LaTeX preservation in initial version
+- [x] Handle LaTeX preservation
 - [x] Test with simple PDF documents
 
-### Task 2.3: Content Filtering Foundation
-**Description**: Implement basic content cleaning using Gemini
-- [ ] Design prompt for irrelevant content removal
-- [ ] Create filtering service with configurable levels
-- [ ] Implement before/after comparison for testing
-- [ ] Handle different types of irrelevant content
-- [ ] Test filtering effectiveness
+### ~~Task 2.3: Content Filtering Foundation~~ ✅
+- [x] Design prompt for irrelevant content removal
+- [x] Create filtering service with configurable levels
+- [x] Implement Gemini-based filtering
+- [x] Handle different types of irrelevant content
+- [x] Test filtering effectiveness
 
-### Task 2.4: Async Processing Pipeline
-**Description**: Make processing asynchronous and track progress
-- [ ] Convert endpoints to async where appropriate
-- [ ] Implement background task processing
-- [ ] Add basic progress tracking mechanism
-- [ ] Create task status endpoints
-- [ ] Handle concurrent LLM API calls
+### ~~Task 2.4: Tool Registry System~~ ✅
+- [x] Create base tool abstraction
+- [x] Implement tool registry with discovery
+- [x] Add tool validation and metadata
+- [x] Create tool execution pipeline
+- [x] Test tool registration and execution
 
-## Phase 3: MCP Protocol Implementation
+## Phase 3: MCP SDK Migration 🎯 CURRENT (v0.2.0)
 
-### Task 3.1: MCP Tool Definitions
-**Description**: Formalize operations as proper MCP tools
-- [ ] Define `pdf_to_structured_markdown` tool schema
-- [ ] Define `filter_lecture_content` tool schema
-- [ ] Implement tool input validation
-- [ ] Create tool execution endpoints
-- [ ] Add tool metadata and descriptions
+### Task 3.1: SDK Installation & Setup
+**Description**: Install official MCP SDK and understand its structure
+- [ ] Add `mcp` to project dependencies
+- [ ] Study SDK documentation and examples
+- [ ] Understand SDK server lifecycle
+- [ ] Review transport options (stdio, SSE, WebSocket)
+- [ ] Plan migration strategy
 
-### Task 3.2: MCP Compliance & Error Handling
-**Description**: Ensure full MCP protocol compliance
-- [ ] Implement standardized MCP error responses
-- [ ] Add resource cleanup mechanisms
-- [ ] Create proper MCP discovery response
-- [ ] Handle tool execution errors per spec
-- [ ] Add MCP version compatibility
+### Task 3.2: Server Wrapper Implementation
+**Description**: Create MCP server using official SDK
+- [ ] Create `app/mcp_server.py` with SDK Server
+- [ ] Implement `@server.list_tools()` handler
+- [ ] Implement `@server.call_tool()` handler
+- [ ] Connect handlers to existing tool registry
+- [ ] Add proper error handling with SDK types
 
-### Task 3.3: Tool Execution Orchestration
-**Description**: Connect MCP tools to actual processing logic
-- [ ] Map MCP tool calls to existing services
-- [ ] Implement input parameter handling
-- [ ] Create response formatting for MCP
-- [ ] Add tool execution logging
-- [ ] Test tool integration end-to-end
+### Task 3.3: Tool Schema Conversion
+**Description**: Convert tool schemas to SDK format
+- [ ] Adapt tool registry to return SDK Tool types
+- [ ] Convert parameter schemas to `inputSchema` format
+- [ ] Update tool metadata for SDK compatibility
+- [ ] Test tool discovery with SDK
+- [ ] Validate against MCP spec
 
-### Task 3.4: MCP Testing & Validation
-**Description**: Test MCP server against specification
-- [ ] Create MCP protocol compliance tests
-- [ ] Test tool discovery functionality
-- [ ] Validate error response formats
-- [ ] Test with MCP client tools
-- [ ] Document MCP usage examples
+### Task 3.4: Tool Execution Integration
+**Description**: Connect SDK tool execution to existing logic
+- [ ] Map SDK tool calls to registry execution
+- [ ] Convert SDK arguments to tool parameters
+- [ ] Format tool results as SDK TextContent
+- [ ] Handle tool execution errors with SDK error types
+- [ ] Test end-to-end execution flow
 
-## Phase 4: Optimization & Production Ready
+### Task 3.5: Transport Implementation
+**Description**: Add multiple transport support
+- [ ] Implement stdio transport for CLI/Agent use
+- [ ] Add SSE transport for web clients
+- [ ] Create HTTP adapter for REST compatibility (optional)
+- [ ] Test each transport independently
+- [ ] Document transport usage
 
-### Task 4.1: Prompt Engineering Refinement
-**Description**: Optimize prompts for better Markdown and filtering results
-- [ ] Analyze current prompt effectiveness
-- [ ] Experiment with different prompt structures
-- [ ] Add context preservation across chunks
-- [ ] Optimize LaTeX handling prompts
-- [ ] Create prompt versioning system
+### Task 3.6: Remove Legacy Code
+**Description**: Clean up custom FastAPI implementation
+- [ ] Remove `app/api/mcp.py` (custom REST endpoints)
+- [ ] Remove custom protocol models (use SDK types)
+- [ ] Update imports across the project
+- [ ] Remove unused dependencies
+- [ ] Clean up configuration for SDK
 
-### Task 4.2: Performance Optimization
-**Description**: Improve processing speed and reliability
-- [ ] Implement parallel LLM API calls for chunks
-- [ ] Add request batching where possible
-- [ ] Optimize chunk sizes based on testing
-- [ ] Implement request retry with exponential backoff
-- [ ] Add request caching for identical chunks
+### Task 3.7: Update Entry Points
+**Description**: Change application startup for SDK
+- [ ] Update `run.py` to start MCP server
+- [ ] Add command-line arguments for transport selection
+- [ ] Create separate entry points (stdio, SSE, HTTP)
+- [ ] Update development workflow documentation
+- [ ] Test all entry points
 
-### Task 4.3: Advanced Error Handling
-**Description**: Make the system robust against failures
-- [ ] Implement partial success handling
-- [ ] Add chunk-level retry mechanisms
-- [ ] Create fallback strategies for API failures
-- [ ] Implement circuit breaker pattern for Gemini API
-- [ ] Add comprehensive error logging
+### Task 3.8: Documentation Update
+**Description**: Update all docs for SDK usage
+- [ ] Update README with new installation steps
+- [ ] Document stdio usage with AI agents
+- [ ] Add Claude Desktop configuration example
+- [ ] Update API documentation
+- [ ] Create migration guide from v0.1.0
 
-### Task 4.4: Production Deployment Setup
-**Description**: Prepare the application for production use
-- [ ] Dockerize the application
-- [ ] Add health check endpoints
-- [ ] Implement proper logging configuration
-- [ ] Add metrics and monitoring
+### Task 3.9: SDK Migration Testing
+**Description**: Comprehensive testing of SDK implementation
+- [ ] Test tool discovery via stdio
+- [ ] Test tool execution via stdio
+- [ ] Test with Claude Desktop integration
+- [ ] Test with Google ADK (if HTTP adapter)
+- [ ] Validate MCP protocol compliance
+
+### Task 3.10: Release v0.2.0
+**Description**: Package and release SDK-based version
+- [ ] Update version to 0.2.0
+- [ ] Create comprehensive changelog
+- [ ] Tag release in Git
+- [ ] Update GitHub release notes
+- [ ] Announce breaking changes from v0.1.0
+
+## Phase 4: Advanced Tool Development (v0.3.0)
+
+### Task 4.1: Multi-Document Processing
+**Description**: Handle batch processing of multiple PDFs
+- [ ] Design batch processing tool schema
+- [ ] Implement parallel document processing
+- [ ] Add progress tracking for batches
+- [ ] Handle partial failures gracefully
+- [ ] Test with multiple documents
+
+### Task 4.2: Tool Composition
+**Description**: Enable chaining multiple tools
+- [ ] Design tool composition patterns
+- [ ] Implement pipeline tool (pdf → markdown → filter)
+- [ ] Add intermediate result caching
+- [ ] Handle errors in tool chains
+- [ ] Test complex workflows
+
+### Task 4.3: Advanced Chunking
+**Description**: Smarter document splitting strategies
+- [ ] Implement semantic chunking (by section/topic)
+- [ ] Add chunk overlap optimization
+- [ ] Create context preservation across chunks
+- [ ] Implement chunk reassembly with coherence
+- [ ] Test with various document structures
+
+### Task 4.4: Result Optimization
+**Description**: Improve output quality and performance
+- [ ] Implement response caching for duplicate content
+- [ ] Add prompt optimization based on document type
+- [ ] Create quality metrics for tool outputs
+- [ ] Implement A/B testing for prompts
+- [ ] Benchmark performance improvements
+
+## Phase 5: Production & Monitoring (v0.4.0)
+
+### Task 5.1: Resource Management
+**Description**: Add MCP resources support
+- [ ] Implement prompt templates as resources
+- [ ] Add document templates
+- [ ] Create resource discovery endpoint
+- [ ] Test resource access from clients
+- [ ] Document resource usage
+
+### Task 5.2: Monitoring & Metrics
+**Description**: Add observability to MCP server
+- [ ] Implement request/response logging
+- [ ] Add execution time metrics
+- [ ] Create health check endpoints
+- [ ] Set up error tracking
+- [ ] Add performance dashboards
+
+### Task 5.3: Docker Deployment
+**Description**: Containerize the application
+- [ ] Create Dockerfile for MCP server
+- [ ] Add docker-compose for development
+- [ ] Configure environment variables
+- [ ] Test container deployment
 - [ ] Create deployment documentation
 
-## Phase 5: Testing & Documentation
+### Task 5.4: Performance Optimization
+**Description**: Optimize for production load
+- [ ] Implement connection pooling for Gemini API
+- [ ] Add request queuing and rate limiting
+- [ ] Optimize memory usage for large PDFs
+- [ ] Implement graceful shutdown
+- [ ] Load test and benchmark
 
-### Task 5.1: Comprehensive Testing Suite
-**Description**: Create tests for all major functionality
-- [ ] Unit tests for PDF processing
-- [ ] Integration tests for Gemini API
+### Task 5.5: Comprehensive Testing
+**Description**: Full test coverage
+- [ ] Unit tests for all tools
+- [ ] Integration tests for SDK server
+- [ ] End-to-end workflow tests
+- [ ] Performance and load tests
 - [ ] MCP protocol compliance tests
-- [ ] End-to-end processing tests
-- [ ] Performance and load testing
 
-### Task 5.2: API Documentation
-**Description**: Create comprehensive documentation for users
-- [ ] Enhance OpenAPI/Swagger documentation
-- [ ] Create MCP tool usage examples
-- [ ] Add code examples for common use cases
-- [ ] Document error scenarios and solutions
-- [ ] Create API quick start guide
+### Task 5.6: Production Documentation
+**Description**: Complete documentation for production use
+- [ ] Deployment guide
+- [ ] Scaling recommendations
+- [ ] Troubleshooting guide
+- [ ] API reference with examples
+- [ ] Contributing guidelines
 
-### Task 5.3: Project Documentation
-**Description**: Document the project for developers and contributors
-- [ ] Update README with setup and usage
-- [ ] Create architecture decision records
-- [ ] Document development workflow
-- [ ] Add contributing guidelines
-- [ ] Create troubleshooting guide
