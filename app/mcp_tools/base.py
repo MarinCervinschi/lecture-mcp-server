@@ -55,6 +55,22 @@ class Tool(ABC, Generic[ToolResult]):
         """Get tool version from schema."""
         return self.schema.version
 
+    def get_prompt(self) -> str:
+        """
+        Get tool prompt from file.
+
+        Returns:
+            str: Tool prompt description
+        """
+
+        try:
+            with open(f"app/prompts/{self.name}.md", "r") as f:
+                prompt = f.read()
+        except FileNotFoundError:
+            raise ValueError(f"Prompt file for tool '{self.name}' not found.")
+
+        return prompt
+
     def validate_parameters(self, parameters: Dict[str, Any]) -> None:
         """
         Validate parameters against schema.

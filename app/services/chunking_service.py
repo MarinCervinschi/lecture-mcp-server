@@ -7,6 +7,7 @@ from app.utils.token_counter import get_token_counter
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class ChunkingConfig:
     """Configuration for document chunking."""
