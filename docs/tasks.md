@@ -45,11 +45,11 @@
 
 ### Task 2.2: Basic Markdown Conversion
 **Description**: Implement first version of PDF-to-Markdown using Gemini
-- [ ] Design initial prompt for Markdown conversion
-- [ ] Create service to send chunks to Gemini API
-- [ ] Implement basic response aggregation
-- [ ] Handle LaTeX preservation in initial version
-- [ ] Test with simple PDF documents
+- [x] Design initial prompt for Markdown conversion
+- [x] Create service to send chunks to Gemini API
+- [x] Implement basic response aggregation
+- [x] Handle LaTeX preservation in initial version
+- [x] Test with simple PDF documents
 
 ### Task 2.3: Content Filtering Foundation
 **Description**: Implement basic content cleaning using Gemini
