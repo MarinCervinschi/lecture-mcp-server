@@ -1,7 +1,7 @@
 import logging
 import time
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.core.config import settings
 from app.models.mcp import (
@@ -11,7 +11,7 @@ from app.models.mcp import (
     ToolExecutionStatus,
     ToolSchema,
 )
-from app.services.mcp_registry import mcp_registry
+from app.services.mcp_registry import MCPToolRegistry, get_mcp_registry
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -23,7 +23,9 @@ router = APIRouter()
     summary="Discover Available Tools",
     description="List all available MCP tools with their schemas",
 )
-async def discover_tools() -> ToolDiscoveryResponse:
+async def discover_tools(
+    mcp_registry: MCPToolRegistry = Depends(get_mcp_registry),
+) -> ToolDiscoveryResponse:
     """Discover all available MCP tools."""
     logger.info("Tool discovery requested")
     schemas = mcp_registry.list_tool_schemas()
@@ -39,7 +41,9 @@ async def discover_tools() -> ToolDiscoveryResponse:
     summary="Get Tool Schema",
     description="Get detailed schema for a specific tool",
 )
-async def get_tool_schema(tool_name: str):
+async def get_tool_schema(
+    tool_name: str, mcp_registry: MCPToolRegistry = Depends(get_mcp_registry)
+) -> ToolSchema:
     """
     Get schema for a specific tool.
 
@@ -70,7 +74,10 @@ async def get_tool_schema(tool_name: str):
     summary="Execute Tool",
     description="Execute an MCP tool with given parameters",
 )
-async def execute_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
+async def execute_tool(
+    request: ToolExecutionRequest,
+    mcp_registry: MCPToolRegistry = Depends(get_mcp_registry),
+) -> ToolExecutionResponse:
     """
     Execute an MCP tool.
 
@@ -118,7 +125,7 @@ async def execute_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
     summary="MCP Health Check",
     description="Check MCP service health and registered tools",
 )
-async def mcp_health() -> dict:
+async def mcp_health(mcp_registry: MCPToolRegistry = Depends(get_mcp_registry)) -> dict:
     """
     MCP service health check.
 

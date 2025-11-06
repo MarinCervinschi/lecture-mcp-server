@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from app.mcp_tools.base import Tool
 from app.mcp_tools.filter_content import FilterContentTool
@@ -15,7 +15,7 @@ class MCPToolRegistry:
 
     def __init__(self):
         """Initialize the registry and load default tools."""
-        self._tools: Dict[str, Tool] = {}
+        self._tools: Dict[str, Tool[Any]] = {}
         self._register_default_tools()
 
     def _register_default_tools(self) -> None:
@@ -87,7 +87,7 @@ class MCPToolRegistry:
         """
         return [tool.schema for tool in self._tools.values()]
 
-    async def execute_tool(self, name: str, parameters: Dict) -> Dict:
+    async def execute_tool(self, name: str, parameters: Dict) -> Any:
         """
         Execute a tool by name.
 
@@ -108,4 +108,10 @@ class MCPToolRegistry:
         return await tool.run(parameters)
 
 
-mcp_registry = MCPToolRegistry()
+from functools import lru_cache
+
+
+@lru_cache(maxsize=1)
+def get_mcp_registry() -> MCPToolRegistry:
+    """Get or create MCPToolRegistry singleton."""
+    return MCPToolRegistry()

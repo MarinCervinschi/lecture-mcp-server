@@ -1,13 +1,15 @@
 import logging
 from abc import ABC, abstractmethod
-from typing import Any, Dict
+from typing import Any, Dict, Generic, TypeVar
 
 from app.models.mcp import ToolSchema
 
 logger = logging.getLogger(__name__)
 
+ToolResult = TypeVar("ToolResult")
 
-class Tool(ABC):
+
+class Tool(ABC, Generic[ToolResult]):
     """
     Abstract base class for MCP tools.
 
@@ -28,7 +30,7 @@ class Tool(ABC):
         pass
 
     @abstractmethod
-    async def execute(self, parameters: Dict[str, Any]) -> Dict[str, Any]:
+    async def execute(self, parameters: Dict[str, Any]) -> ToolResult:
         """
         Execute the tool with given parameters.
 
@@ -53,6 +55,22 @@ class Tool(ABC):
         """Get tool version from schema."""
         return self.schema.version
 
+    def get_prompt(self) -> str:
+        """
+        Get tool prompt from file.
+
+        Returns:
+            str: Tool prompt description
+        """
+
+        try:
+            with open(f"app/prompts/{self.name}.md", "r") as f:
+                prompt = f.read()
+        except FileNotFoundError:
+            raise ValueError(f"Prompt file for tool '{self.name}' not found.")
+
+        return prompt
+
     def validate_parameters(self, parameters: Dict[str, Any]) -> None:
         """
         Validate parameters against schema.
@@ -71,9 +89,13 @@ class Tool(ABC):
         if missing:
             raise ValueError(f"Missing required parameters: {', '.join(missing)}")
 
+        extra = set(parameters.keys()) - set(required_params)
+        if extra:
+            logger.warning(f"Extra parameters provided: {', '.join(extra)}")
+
         logger.debug(f"Parameters validated for tool: {self.name}")
 
-    async def run(self, parameters: Dict[str, Any]) -> Dict[str, Any]:
+    async def run(self, parameters: Dict[str, Any]) -> ToolResult:
         """
         Run the tool with validation.
 

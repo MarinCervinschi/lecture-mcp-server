@@ -37,19 +37,19 @@
 
 ### Task 2.1: Document Chunking Strategy
 **Description**: Implement intelligent document splitting for LLM processing
-- [ ] Analyze different chunking strategies (page-based, token-based)
-- [ ] Implement page-based chunking as primary approach
-- [ ] Add chunk size optimization for Gemini context windows
-- [ ] Create chunk overlap handling for context preservation
-- [ ] Test chunking with various document types
+- [x] Analyze different chunking strategies (page-based, token-based)
+- [x] Implement page-based chunking as primary approach
+- [x] Add chunk size optimization for Gemini context windows
+- [x] Create chunk overlap handling for context preservation
+- [x] Test chunking with various document types
 
 ### Task 2.2: Basic Markdown Conversion
 **Description**: Implement first version of PDF-to-Markdown using Gemini
-- [ ] Design initial prompt for Markdown conversion
-- [ ] Create service to send chunks to Gemini API
-- [ ] Implement basic response aggregation
-- [ ] Handle LaTeX preservation in initial version
-- [ ] Test with simple PDF documents
+- [x] Design initial prompt for Markdown conversion
+- [x] Create service to send chunks to Gemini API
+- [x] Implement basic response aggregation
+- [x] Handle LaTeX preservation in initial version
+- [x] Test with simple PDF documents
 
 ### Task 2.3: Content Filtering Foundation
 **Description**: Implement basic content cleaning using Gemini

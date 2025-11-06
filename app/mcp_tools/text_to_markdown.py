@@ -3,12 +3,31 @@ from typing import Any, Dict
 
 from app.mcp_tools.base import Tool
 from app.models.mcp import ToolParameter, ToolParameterType, ToolSchema
+from app.services.gemini_client import GeminiAPIError, get_gemini_client
 
 logger = logging.getLogger(__name__)
 
+from pydantic import BaseModel, Field
 
-class TextToMarkdownTool(Tool):
+
+class TextToMardownParameters(BaseModel):
+    """Parameters for text to Markdown conversion tool."""
+
+    content: str = Field(..., min_length=1)
+
+
+class TextToMarkdownResult(BaseModel):
+    """Result of text to Markdown conversion."""
+
+    markdown: str = Field(..., description="Formatted Markdown content")
+
+
+class TextToMarkdownTool(Tool[TextToMarkdownResult]):
     """Tool for formatting text as clean Markdown."""
+
+    def __init__(self):
+        self.gemini_client = get_gemini_client()
+        self.prompt = self.get_prompt()
 
     @property
     def schema(self) -> ToolSchema:
@@ -24,69 +43,71 @@ class TextToMarkdownTool(Tool):
                     description="Plain text content to convert to Markdown",
                     required=True,
                 ),
-                ToolParameter(
-                    name="preserve_latex",
-                    type=ToolParameterType.BOOLEAN,
-                    description="Whether to preserve LaTeX formulas",
-                    required=False,
-                    default=True,
-                ),
-                ToolParameter(
-                    name="source_format",
-                    type=ToolParameterType.STRING,
-                    description="Source format hint (plain, extracted_pdf, etc.)",
-                    required=False,
-                    default="plain",
-                    enum=["plain", "extracted_pdf", "ocr", "transcript"],
-                ),
             ],
         )
 
-    async def execute(self, parameters: Dict[str, Any]) -> Dict[str, Any]:
+    async def execute(self, parameters: Dict[str, Any]) -> TextToMarkdownResult:
         """
         Execute text to Markdown conversion.
 
         Args:
-            parameters: Tool parameters including content, preserve_latex
+            parameters: Tool parameters including content
 
         Returns:
             Dict with formatted Markdown content
         """
         logger.info("Executing text to Markdown conversion")
 
-        content = parameters["content"]
-        preserve_latex = parameters.get("preserve_latex", True)
-        source_format = parameters.get("source_format", "plain")
+        validated_params = TextToMardownParameters(**parameters)
 
-        # TODO: Implement actual formatting logic with Gemini
-        # For now, return basic formatted version
-        markdown = self._basic_format(content, preserve_latex)
+        content = validated_params.content
 
-        return {
-            "original_length": len(content),
-            "markdown_length": len(markdown),
-            "preserve_latex": preserve_latex,
-            "source_format": source_format,
-            "markdown": markdown,
-        }
+        try:
+            markdown = await self._convert_to_markdown(content)
+            return TextToMarkdownResult(
+                markdown=markdown,
+            )
+        except GeminiAPIError as e:
+            logger.error(f"Markdown conversion failed: {str(e)}")
+            raise
 
-    def _basic_format(self, content: str, preserve_latex: bool) -> str:
+    async def _convert_to_markdown(
+        self,
+        content: str,
+    ) -> str:
         """
-        Basic Markdown formatting (placeholder).
+        Convert text to Markdown format.
 
-        TODO: Replace with Gemini-based formatting
+        Args:
+            content: Text content to convert
+
+        Returns:
+            str: Formatted Markdown
+
+        Raises:
+            GeminiError: If conversion fails
         """
-        # Simple placeholder implementation
-        lines = content.split("\n")
-        formatted = []
 
-        for line in lines:
-            stripped = line.strip()
+        logger.info(f"Converting {len(content)} chars to Markdown")
 
-            # Detect potential headers (all caps or short lines)
-            if stripped and stripped.isupper() and len(stripped) < 50:
-                formatted.append(f"## {stripped.title()}\n")
-            elif stripped:
-                formatted.append(stripped)
+        try:
+            prompt = self.prompt.replace("{content}", content)
 
-        return "\n\n".join(formatted)
+            response = await self.gemini_client.generate_with_retry(
+                prompt=prompt,
+                temperature=0.3,
+                max_tokens=8000,
+            )
+
+            markdown = response.content.strip()
+
+            logger.info(f"Conversion complete: {len(markdown)} chars")
+
+            return markdown
+
+        except GeminiAPIError as e:
+            logger.error(f"Markdown conversion failed: {str(e)}")
+            raise
+        except Exception as e:
+            logger.error(f"Unexpected error in conversion: {str(e)}", exc_info=True)
+            raise GeminiAPIError(f"Conversion failed: {str(e)}")
