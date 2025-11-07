@@ -94,9 +94,9 @@ In a separate terminal, start the ADK web interface:
 adk web --port 8080
 ```
 
-Then open your browser at `http://localhost:8080` to interact with the agent that uses the MCP server tools.
+Then open your browser at [http://localhost:8080](http://localhost:8080) to interact with the agent that uses the MCP server tools.
 
-The example agent configuration is in `sse_agent/agent.py` - this is just a testing tool to verify the MCP server works correctly.
+The example agent configuration is in [sse_agent/agent.py](sse_agent/agent.py) - this is just a testing tool to verify the MCP server works correctly.
 
 ## ⚙️ Available MCP Tools
 
