@@ -12,7 +12,7 @@ from app.utils.file_utils import FileValidationError, validate_file
 logger = logging.getLogger(__name__)
 
 
-class PDFToTextParameters(BaseModel):
+class PDFToTextArgs(BaseModel):
     file_data: str = Field(..., description="Base64 encoded PDF file content")
 
 
@@ -40,24 +40,24 @@ class PDFToTextTool(BaseMCPTool):
                 "Extract text from PDF and chunk for LLM processing. "
                 "Returns token-optimized chunks that fit within LLM context limits."
             ),
-            inputSchema=PDFToTextParameters.model_json_schema(),
+            inputSchema=PDFToTextArgs.model_json_schema(),
             outputSchema=PDFToTextResult.model_json_schema(),
         )
 
-    async def execute(self, parameters: Dict[str, Any]) -> PDFToTextResult:
+    async def execute(self, args: Dict[str, Any]) -> Dict[str, Any]:
         """
         Extract PDF text and create LLM-ready chunks.
 
         Args:
-            parameters: Tool parameters including base64 PDF data
+            args: Tool parameters including base64 PDF data
 
         Returns:
-            PDFToTextResult: Extracted chunks with metadata
+            PDFToTextResult: Extracted chunks with metadata convered to dict
         """
         logger.info("Executing PDF to text extraction with smart chunking")
 
         try:
-            validated_params = PDFToTextParameters(**parameters)
+            validated_params = PDFToTextArgs(**args)
 
             pdf_data = validate_file(
                 validated_params.file_data, mime_type="application/pdf"
@@ -74,7 +74,7 @@ class PDFToTextTool(BaseMCPTool):
 
             logger.info(f"Extraction complete: {len(chunks)} chunks created from PDF")
 
-            return pdf_result
+            return pdf_result.model_dump()
 
         except (FileValidationError, PDFProcessingError, ValueError) as e:
             logger.error(f"PDF extraction failed: {str(e)}")

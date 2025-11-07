@@ -51,13 +51,13 @@ class MCPToolRegistry:
         """
         return [tool.schema for tool in self._tools.values()]
 
-    async def execute_tool(self, name: str, arguments: Dict[str, Any]) -> Any:
+    async def execute_tool(self, name: str, args: Dict[str, Any]) -> Dict[str, Any]:
         """
         Execute a tool by name.
 
         Args:
             name: Tool name
-            arguments: Tool arguments
+            args: Tool arguments
 
         Returns:
             Dict: Execution result
@@ -67,9 +67,9 @@ class MCPToolRegistry:
         """
         tool = self.get_tool(name)
         if not tool:
-            raise ValueError(f"Tool '{name}' not found")
+            raise ValueError()
 
-        return await tool.execute(**arguments)
+        return await tool.execute(args)
 
 
 from functools import lru_cache

@@ -1,6 +1,6 @@
 import logging
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Dict
 
 logger = logging.getLogger(__name__)
 
@@ -40,12 +40,12 @@ class BaseMCPTool(ABC):
         pass
 
     @abstractmethod
-    async def execute(self, **kwargs) -> Any:
+    async def execute(self, args: Dict[str, Any]) -> Dict[str, Any]:
         """
         Execute the tool.
 
         Args:
-            **kwargs: Tool parameters
+            args: Tool arguments
 
         Returns:
             Any: Tool execution result

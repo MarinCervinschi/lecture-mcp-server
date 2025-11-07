@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 from pydantic import BaseModel, Field
 
 
-class TextToMardownParameters(BaseModel):
+class TextToMarkdownArgs(BaseModel):
     content: str = Field(..., min_length=1)
 
 
@@ -32,30 +32,31 @@ class TextToMarkdownTool(BaseMCPTool):
         return MCPTool(
             name="text_to_markdown",
             description="Convert plain text to well-formatted Markdown with LaTeX support",
-            inputSchema=TextToMardownParameters.model_json_schema(),
+            inputSchema=TextToMarkdownArgs.model_json_schema(),
             outputSchema=TextToMarkdownResult.model_json_schema(),
         )
 
-    async def execute(self, parameters: Dict[str, Any]) -> TextToMarkdownResult:
+    async def execute(self, args: Dict[str, Any]) -> Dict[str, Any]:
         """
         Execute text to Markdown conversion.
 
         Args:
-            parameters: Tool parameters including content
+            args: Tool parameters including content
 
         Returns:
-            TextToMarkdownResult with formatted Markdown
+            TextToMarkdownResult with formatted Markdown converted to dict
         """
         logger.info("Executing text to Markdown conversion")
 
-        validated_params = TextToMardownParameters(**parameters)
+        validated_params = TextToMarkdownArgs(**args)
         content = validated_params.content
 
         try:
             markdown = await self._convert_to_markdown(content)
-            return TextToMarkdownResult(
+            result = TextToMarkdownResult(
                 markdown=markdown,
             )
+            return result.model_dump()
         except GeminiAPIError as e:
             logger.error(f"Markdown conversion failed: {str(e)}")
             raise
