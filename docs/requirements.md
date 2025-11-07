@@ -19,11 +19,11 @@
 - [ ] Response aggregation and reconstruction
 
 ### MCP Server Implementation (SDK-based)
-- [ ] Migration to official `mcp` Python SDK
-- [ ] stdio transport for AI agent integration (Claude Desktop, etc.)
-- [ ] SSE transport for web-based clients
-- [ ] HTTP transport adapter for REST compatibility
-- [ ] Standard MCP protocol compliance via SDK
+- [x] Migration to official `mcp` Python SDK
+- [x] stdio transport for AI agent integration (Claude Desktop, etc.)
+- [x] SSE transport for web-based clients
+- [x] HTTP transport adapter for REST compatibility
+- [x] Standard MCP protocol compliance via SDK
 
 ### Tool Implementation Focus
 - [x] Tool registry and discovery system
@@ -49,11 +49,11 @@
 - [ ] Circuit breaker pattern for external APIs
 
 ### MCP Compliance
-- [ ] **Official SDK implementation** (replacing custom REST)
-- [ ] Standard protocol messages (tools/list, tools/call)
-- [ ] Proper error codes and responses
-- [ ] Multiple transport support (stdio, SSE, HTTP)
-- [ ] SDK lifecycle management
+- [x] **Official SDK implementation** (replacing custom REST)
+- [x] Standard protocol messages (tools/list, tools/call)
+- [x] Proper error codes and responses
+- [x] Multiple transport support (stdio, SSE, HTTP)
+- [x] SDK lifecycle management
 
 ## Development Phases
 
@@ -66,18 +66,18 @@
 - [x] Custom REST API
 
 ### Phase 2: SDK Migration (v0.2.0) 🎯 CURRENT
-- [ ] Install and configure `mcp` Python SDK
-- [ ] Create MCP server wrapper using SDK
-- [ ] Migrate tool discovery to SDK format
-- [ ] Migrate tool execution to SDK handlers
-- [ ] Add stdio transport for AI agents
-- [ ] Add SSE transport for web clients
-- [ ] Add HTTP adapter for REST compatibility
-- [ ] Remove custom FastAPI MCP endpoints
-- [ ] Update documentation for SDK usage
+- [x] Install and configure `mcp` Python SDK
+- [x] Create MCP server wrapper using SDK
+- [x] Migrate tool discovery to SDK format
+- [x] Migrate tool execution to SDK handlers
+- [x] Add stdio transport for AI agents
+- [x] Add SSE transport for web clients
+- [x] Add HTTP adapter for REST compatibility
+- [x] Remove custom FastAPI MCP endpoints
+- [x] Update documentation for SDK usage
 
 ### Phase 3: Advanced Tools (v0.3.0)
-- [ ] Multi-page PDF processing with progress tracking
+- [x] Multi-page PDF processing with progress tracking
 - [ ] Batch processing for multiple documents
 - [ ] Tool composition (chain pdf_to_text → text_to_markdown → filter_content)
 - [ ] Advanced chunking strategies
@@ -129,15 +129,15 @@
 ## Migration Checklist (v0.1.0 → v0.2.0)
 
 ### Remove
-- [ ] `app/api/mcp.py` - Custom REST endpoints
-- [ ] Custom protocol models in `app/models/mcp.py` (replace with SDK types)
-- [ ] Manual schema conversion logic
+- [x] `app/api/mcp.py` - Custom REST endpoints
+- [x] Custom protocol models in `app/models/mcp.py` (replace with SDK types)
+- [x] Manual schema conversion logic
 
 ### Add
-- [ ] `app/mcp_server.py` - SDK-based server implementation
-- [ ] `mcp` dependency in `pyproject.toml`
-- [ ] Transport configuration (stdio, SSE)
-- [ ] SDK initialization and lifecycle
+- [x] `app/mcp_server.py` - SDK-based server implementation
+- [x] `mcp` dependency in `pyproject.toml`
+- [x] Transport configuration (stdio, SSE)
+- [x] SDK initialization and lifecycle
 
 ### Keep (No Changes)
 - [x] `app/mcp_tools` - All tool implementations
@@ -147,7 +147,7 @@
 - [x] Tests for tool logic
 
 ### Update
-- [ ] `run.py` - Change from FastAPI to MCP server startup
-- [ ] Tool registry interface - Adapt to SDK requirements
-- [ ] Documentation - SDK usage instead of REST API
-- [ ] README - New installation and usage instructions
+- [x] `run.py` - Change from FastAPI to MCP server startup
+- [x] Tool registry interface - Adapt to SDK requirements
+- [x] Documentation - SDK usage instead of REST API
+- [x] README - New installation and usage instructions
