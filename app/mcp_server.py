@@ -1,26 +1,16 @@
 import logging
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from typing import Any
+from typing import Any, Dict
 
-from mcp.server import Server
+import uvicorn
+from mcp.server.lowlevel import Server
 from mcp.types import Tool
 
 from app.core.config import settings
 from app.services.mcp_registry import get_mcp_registry
 
 logger = logging.getLogger(__name__)
-
-
-@asynccontextmanager
-async def lifespan(app: Server):
-    """Application lifespan events."""
-    # Startup
-    logger.info(f"Starting {settings.PROJECT_NAME} v{settings.VERSION}")
-
-    yield
-
-    # Shutdown
-    logger.info(f"Shutting down {settings.PROJECT_NAME}")
 
 
 async def create_server() -> Server:
@@ -30,7 +20,6 @@ async def create_server() -> Server:
     server = Server(
         name=settings.PROJECT_NAME,
         version=settings.VERSION,
-        lifespan=lifespan,
     )
 
     @server.list_tools()
@@ -39,11 +28,10 @@ async def create_server() -> Server:
         return registry.list_tools()
 
     @server.call_tool()
-    async def call_tool(name: str, arguments: dict) -> Any:
-        """Execute tool - clean integration!"""
+    async def call_tool(name: str, args: Dict[str, Any]) -> Dict[str, Any]:
+        """Execute tool"""
         try:
-            result = await registry.execute_tool(name, arguments)
-            return result
+            return await registry.execute_tool(name, args)
         except ValueError as e:
             raise ValueError(f"Tool '{name}' not found: {str(e)}")
         except Exception as e:
@@ -69,49 +57,51 @@ async def run_stdio_server():
 
 async def run_sse_server():
     """Run MCP server with SSE transport (for web apps)."""
-    from mcp.server.sse import SseServerTransport
+    from mcp.server.streamable_http_manager import StreamableHTTPSessionManager
     from starlette.applications import Starlette
-    from starlette.requests import Request
-    from starlette.routing import Route
-
-    host: str = settings.HOST
-    port: int = settings.PORT
-
-    logger.info("Starting MCP server with SSE transport")
-    logger.info(f"Server: {settings.PROJECT_NAME} v{settings.VERSION}")
+    from starlette.middleware.cors import CORSMiddleware
+    from starlette.routing import Mount
+    from starlette.types import Receive, Scope, Send
 
     server = await create_server()
-    sse = SseServerTransport("/mcp")
 
-    async def handle_sse(request: Request):
-        """Handle SSE connection."""
-        async with sse.connect_sse(
-            request.scope, request.receive, request._send
-        ) as streams:
-            await server.run(
-                streams[0], streams[1], server.create_initialization_options()
-            )
+    session_manager = StreamableHTTPSessionManager(
+        app=server, event_store=None, stateless=True
+    )
 
-    async def handle_messages(request: Request):
-        """Handle POST messages."""
-        await sse.handle_post_message(request.scope, request.receive, request._send)
+    @asynccontextmanager
+    async def lifespan(_: Starlette) -> AsyncIterator[None]:
+        """Context manager for session manager."""
+        async with session_manager.run():
+            try:
+                yield
+            finally:
+                logger.info("Application shutting down...")
+
+    async def handle_streamable_http(
+        scope: Scope, receive: Receive, send: Send
+    ) -> None:
+        await session_manager.handle_request(scope, receive, send)
 
     app = Starlette(
         routes=[
-            Route("/sse", endpoint=handle_sse),
-            Route("/mcp", endpoint=handle_messages, methods=["POST"]),
-        ]
+            Mount("/mcp", app=handle_streamable_http),
+        ],
+        lifespan=lifespan,
     )
 
-    import uvicorn
+    app = CORSMiddleware(
+        app,
+        allow_origins=["*"],
+        allow_methods=["GET", "POST", "DELETE"],
+        expose_headers=["Mcp-Session-Id"],
+    )
 
     config = uvicorn.Config(
         app,
-        host=host,
-        port=port,
+        host=settings.HOST,
+        port=settings.PORT,
         log_level=settings.LOG_LEVEL.lower(),
-        reload=settings.is_development,
-        workers=settings.WORKERS,
     )
-    server_instance = uvicorn.Server(config)
-    await server_instance.serve()
+    server = uvicorn.Server(config)
+    await server.serve()
