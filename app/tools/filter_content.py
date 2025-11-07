@@ -1,8 +1,8 @@
 import logging
 from typing import Any, Dict
 
-from app.mcp_tools.base import Tool
 from app.models.mcp import ToolParameter, ToolParameterType, ToolSchema
+from app.tools.base import Tool
 
 logger = logging.getLogger(__name__)
 
