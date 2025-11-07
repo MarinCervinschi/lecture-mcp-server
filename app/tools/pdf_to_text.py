@@ -1,30 +1,22 @@
 import logging
 from typing import Any, Dict, List
 
+from mcp.types import Tool as MCPTool
 from pydantic import BaseModel, Field
 
-from app.mcp_tools.base import Tool
-from app.models.mcp import (
-    ToolParameter,
-    ToolParameterType,
-    ToolSchema,
-)
 from app.models.pdf import PDFChunk
 from app.services.pdf_service import PDFProcessingError, get_pdf_service
+from app.tools.base import BaseMCPTool
 from app.utils.file_utils import FileValidationError, validate_file
 
 logger = logging.getLogger(__name__)
 
 
 class PDFToTextParameters(BaseModel):
-    """Parameters for PDF to text extraction tool."""
-
     file_data: str = Field(..., description="Base64 encoded PDF file content")
 
 
 class PDFToTextResult(BaseModel):
-    """Result of PDF to text extraction and chunking."""
-
     metadata: Dict[str, Any] = Field(
         ..., description="Metadata about the processed PDF"
     )
@@ -32,39 +24,24 @@ class PDFToTextResult(BaseModel):
     chunks: List[PDFChunk] = Field(..., description="List of extracted PDF chunks")
 
 
-class PDFToTextTool(Tool[PDFToTextResult]):
-    """
-    Extract text from PDF and split into LLM-ready chunks.
-
-    This tool:
-    - Extracts text from PDF pages
-    - Splits content into token-optimized chunks
-    - Adds overlap for context preservation
-    - Returns structured data for client processing
-    """
+class PDFToTextTool(BaseMCPTool):
+    """Extract text from PDF and split into LLM-ready chunks."""
 
     def __init__(self):
+        super().__init__()
         self.pdf_service = get_pdf_service()
 
-    @property
-    def schema(self) -> ToolSchema:
-        """Get tool schema."""
-        return ToolSchema(
+    def _create_schema(self) -> MCPTool:
+        """Create tool schema."""
+
+        return MCPTool(
             name="pdf_to_text",
             description=(
                 "Extract text from PDF and chunk for LLM processing. "
                 "Returns token-optimized chunks that fit within LLM context limits."
             ),
-            version="2.0.0",
-            parameters=[
-                ToolParameter(
-                    name="file_data",
-                    type=ToolParameterType.FILE,
-                    description="PDF file content (base64 encoded)",
-                    required=True,
-                    mime_types=["application/pdf"],
-                )
-            ],
+            inputSchema=PDFToTextParameters.model_json_schema(),
+            outputSchema=PDFToTextResult.model_json_schema(),
         )
 
     async def execute(self, parameters: Dict[str, Any]) -> PDFToTextResult:
@@ -72,10 +49,10 @@ class PDFToTextTool(Tool[PDFToTextResult]):
         Extract PDF text and create LLM-ready chunks.
 
         Args:
-            parameters: Tool parameters
+            parameters: Tool parameters including base64 PDF data
 
         Returns:
-            dict: Extracted chunks with metadata
+            PDFToTextResult: Extracted chunks with metadata
         """
         logger.info("Executing PDF to text extraction with smart chunking")
 
