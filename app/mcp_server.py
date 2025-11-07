@@ -65,9 +65,7 @@ async def run_sse_server():
 
     server = await create_server()
 
-    session_manager = StreamableHTTPSessionManager(
-        app=server, event_store=None, stateless=True
-    )
+    session_manager = StreamableHTTPSessionManager(app=server)
 
     @asynccontextmanager
     async def lifespan(_: Starlette) -> AsyncIterator[None]:
