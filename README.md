@@ -126,6 +126,18 @@ Convert plain text to well-formatted Markdown with LaTeX support.
 
 - `markdown`: Formatted Markdown content
 
+### 3. `filter_content`
+
+Filter and clean up content by removing noise and irrelevant information.
+
+**Input:**
+
+- `content` (string): Text to filter
+
+**Output:**
+
+- `filtered_content`: Cleaned and filtered text
+
 ## 🧪 Testing
 
 ```bash

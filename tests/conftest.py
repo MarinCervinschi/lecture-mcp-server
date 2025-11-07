@@ -1,8 +1,24 @@
 import base64
+from unittest.mock import MagicMock
 
 import pytest
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
+
+from app.services.gemini_client import GeminiResponse
+
+
+@pytest.fixture
+def mock_gemini_response() -> GeminiResponse:
+    """Create a mock Gemini response for testing."""
+    return GeminiResponse(
+        content="Mock response content",
+        model="gemini-2.0-flash",
+        prompt_tokens=100,
+        completion_tokens=50,
+        total_tokens=150,
+        finish_reason="STOP",
+    )
 
 
 @pytest.fixture

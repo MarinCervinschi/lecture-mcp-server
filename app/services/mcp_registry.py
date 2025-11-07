@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Optional
 from mcp.types import Tool as MCPTool
 
 from app.tools.base import BaseMCPTool as Tool
+from app.tools.filter_content import FilterContentTool
 from app.tools.pdf_to_text import PDFToTextTool
 from app.tools.text_to_markdown import TextToMarkdownTool
 
@@ -23,6 +24,7 @@ class MCPToolRegistry:
         tools: List[Tool] = [
             PDFToTextTool(),
             TextToMarkdownTool(),
+            FilterContentTool(),
         ]
 
         for tool in tools:
