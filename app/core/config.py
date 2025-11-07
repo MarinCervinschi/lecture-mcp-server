@@ -11,6 +11,9 @@ class Settings(BaseSettings):
     VERSION: str = "0.2.0"
     DESCRIPTION: str = "MCP Server for PDF lecture processing with Gemini AI"
 
+    # Transport
+    TRANSPORT: str = "sse"  # Options: 'sse', 'stdio'
+
     # Environment
     ENVIRONMENT: str = "development"
 
@@ -30,7 +33,7 @@ class Settings(BaseSettings):
     MAX_FILE_SIZE: int = 10 * 1024 * 1024  # 10MB
 
     # Server
-    HOST: str = "127.0.0.1"
+    HOST: str = "0.0.0.0"
     PORT: int = 8000
     RELOAD: bool = True
     WORKERS: int = 1
