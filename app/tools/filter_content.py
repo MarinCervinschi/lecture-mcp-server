@@ -1,95 +1,98 @@
 import logging
 from typing import Any, Dict
 
-from app.models.mcp import ToolParameter, ToolParameterType, ToolSchema
-from app.tools.base import Tool
+from mcp.types import Tool as MCPTool
+from pydantic import BaseModel, Field
+
+from app.services.gemini_client import GeminiAPIError, get_gemini_client
+from app.tools.base import BaseMCPTool
 
 logger = logging.getLogger(__name__)
 
 
-class FilterContentTool(Tool):
+class FilterContentArgs(BaseModel):
+    content: str = Field(..., min_length=1)
+
+
+class FilterContentResult(BaseModel):
+    filtered_content: str = Field(..., description="Cleaned text with noise removed")
+
+
+class FilterContentTool(BaseMCPTool):
     """Tool for filtering irrelevant content from text."""
 
-    @property
-    def schema(self) -> ToolSchema:
-        """Get tool schema."""
-        return ToolSchema(
+    def __init__(self):
+        super().__init__()
+        self.gemini_client = get_gemini_client()
+        self.prompt = self.get_prompt()
+
+    def _create_schema(self) -> MCPTool:
+        """Create tool schema."""
+        return MCPTool(
             name="filter_content",
             description="Remove noise and irrelevant content from any text",
-            version="1.0.0",
-            parameters=[
-                ToolParameter(
-                    name="content",
-                    type=ToolParameterType.STRING,
-                    description="Text content to filter",
-                    required=True,
-                ),
-                ToolParameter(
-                    name="filter_level",
-                    type=ToolParameterType.INTEGER,
-                    description="Filtering intensity (0=none, 1=light, 2=medium, 3=aggressive)",
-                    required=False,
-                    default=1,
-                    enum=["0", "1", "2", "3"],
-                ),
-                ToolParameter(
-                    name="preserve_patterns",
-                    type=ToolParameterType.ARRAY,
-                    description="Patterns to always preserve (e.g., LaTeX, code blocks)",
-                    required=False,
-                    default=["$$", "```"],
-                ),
-            ],
+            inputSchema=FilterContentArgs.model_json_schema(),
+            outputSchema=FilterContentResult.model_json_schema(),
         )
 
-    async def execute(self, parameters: Dict[str, Any]) -> Dict[str, Any]:
+    async def execute(self, args: Dict[str, Any]) -> Dict[str, Any]:
         """
         Execute content filtering.
 
         Args:
-            parameters: Tool parameters including content, filter_level
+            args: Tool parameters including content
 
         Returns:
-            Dict with filtered content
+            FilterContentResult with filtered content converted to dict
         """
         logger.info("Executing content filtering")
 
-        content = parameters["content"]
-        filter_level = parameters.get("filter_level", 1)
-        preserve_patterns = parameters.get("preserve_patterns", ["$$", "```"])
+        validated_params = FilterContentArgs(**args)
+        content = validated_params.content
 
-        # TODO: Implement actual filtering logic with Gemini
-        # For now, return placeholder
-        filtered_content = self._basic_filter(content, filter_level)
+        try:
+            filtered_content = await self._filter_content(content)
+            result = FilterContentResult(
+                filtered_content=filtered_content,
+            )
+            return result.model_dump()
+        except GeminiAPIError as e:
+            logger.error(f"Content filtering failed: {str(e)}")
+            raise
 
-        return {
-            "original_length": len(content),
-            "filtered_length": len(filtered_content),
-            "filter_level": filter_level,
-            "content": filtered_content,
-        }
-
-    def _basic_filter(self, content: str, level: int) -> str:
+    async def _filter_content(self, content: str) -> str:
         """
-        Basic filtering logic (placeholder).
+        Filter irrelevant content from text.
 
-        TODO: Replace with Gemini-based filtering
+        Args:
+            content: Text content to filter
+
+        Returns:
+            str: Filtered content
+
+        Raises:
+            GeminiAPIError: If filtering fails
         """
-        if level == 0:
-            return content
+        logger.info(f"Filtering {len(content)} chars")
 
-        lines = content.split("\n")
-        filtered_lines = []
+        try:
+            prompt = self.prompt.replace("{content}", content)
 
-        for line in lines:
-            # Skip empty lines at higher levels
-            if level >= 2 and not line.strip():
-                continue
+            response = await self.gemini_client.generate_with_retry(
+                prompt=prompt,
+                temperature=0.3,
+                max_tokens=8000,
+            )
 
-            # Skip common navigation elements
-            if any(nav in line.lower() for nav in ["next slide", "previous", "page"]):
-                continue
+            filtered = response.content.strip()
 
-            filtered_lines.append(line)
+            logger.info(f"Filtering complete: {len(filtered)} chars")
 
-        return "\n".join(filtered_lines)
+            return filtered
+
+        except GeminiAPIError as e:
+            logger.error(f"Content filtering failed: {str(e)}")
+            raise
+        except Exception as e:
+            logger.error(f"Unexpected error in filtering: {str(e)}", exc_info=True)
+            raise GeminiAPIError(f"Filtering failed: {str(e)}")
