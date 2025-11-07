@@ -11,9 +11,6 @@ class Settings(BaseSettings):
     VERSION: str = "0.2.0"
     DESCRIPTION: str = "MCP Server for PDF lecture processing with Gemini AI"
 
-    # Transport
-    TRANSPORT: str = "sse"  # Options: 'sse', 'stdio'
-
     # Environment
     ENVIRONMENT: str = "development"
 
