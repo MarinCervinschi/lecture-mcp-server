@@ -8,8 +8,7 @@ class Settings(BaseSettings):
 
     # Project
     PROJECT_NAME: str = "Lecture MCP Server"
-    VERSION: str = "0.1.0"
-    API_STR: str = "/api"
+    VERSION: str = "0.2.0"
     DESCRIPTION: str = "MCP Server for PDF lecture processing with Gemini AI"
 
     # Environment
